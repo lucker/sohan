@@ -117,7 +117,7 @@ class ParsingAbstractClass extends insertEventsModel
         } while ($mrc == CURLM_CALL_MULTI_PERFORM);
         while ($active && $mrc == CURLM_OK) {
             if (curl_multi_select($this->mh) == -1) {
-                sleep(1);
+                usleep(100);
             }
             do {
                 $mrc = curl_multi_exec($this->mh, $active);

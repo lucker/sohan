@@ -56,6 +56,9 @@ class proxy
 
         for ($i=0; $i<count($channels); $i++) {
             $res = curl_multi_getcontent($channels[$i]);
+            /*echo $res;
+            ob_flush();
+            flush();*/
             if ($res) {
                 \Yii::$app->db
                     ->createCommand("UPDATE `proxy` SET `working`='1' WHERE (`id`='{$proxy[$i]['id']}')")
