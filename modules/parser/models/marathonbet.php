@@ -38,6 +38,7 @@ class marathonbet extends ParsingAbstractClass
                 $tmpMatches[] = $matches[$j+$i];
             }
             $channels = $this->proceedUrls($tmpMatches);
+            $u = 0;
             foreach ($channels as $key => $channel) {
                 $html = curl_multi_getcontent($channel);
                 if ($html) {
@@ -46,9 +47,6 @@ class marathonbet extends ParsingAbstractClass
                     $leageId = $this->insertLeage($matches[$key+$i]['leage'], 2);
                     $idTeams = $this->insertTeam($matches[$key+$i]['teams']);
                     $matchId = $this->insertMatch($idTeams, $leageId, $matches[$key+$i]['date'], 2, $matches[$key+$i]['href']);
-                    /*echo $leageId.' '.$matchId;
-                    ob_flush();
-                    flush();*/
                     //победы
                     $eventsOdds = [];
                     $spans = pq($document)
@@ -111,13 +109,11 @@ class marathonbet extends ParsingAbstractClass
                         }
                     }
                     //
-                    curl_multi_remove_handle($this->mh, $channel);
                     \phpQuery::unloadDocuments();
-                    curl_close($channel);
-                    //curl_close($channel);
-                    //вот здесь сука утечка памяти уродский гугл
-                    //\phpQuery::unloadDocuments();
+                    gc_collect_cycles();
                 }
+                curl_multi_remove_handle($this->mh, $channel);
+                curl_close($channel);
             }
         }
     }
@@ -142,10 +138,11 @@ class marathonbet extends ParsingAbstractClass
                         'text' => trim($a->text())
                     ];
                 }
-                curl_multi_remove_handle($this->mh, $channel);
                 \phpQuery::unloadDocuments();
-                curl_close($channel);
+                gc_collect_cycles();
             }
+            curl_multi_remove_handle($this->mh, $channel);
+            curl_close($channel);
         }
         return $leagesArray;
     }
@@ -162,6 +159,7 @@ class marathonbet extends ParsingAbstractClass
             for ($j=0; $j<$this->connections && $j+$i<count($leages); $j++) {
                 $tmpLeages[] = $leages[$j+$i];
             }
+            $u = 0;
             $channels = $this->proceedUrls($tmpLeages);
             foreach ($channels as $key => $channel) {
                 $html = curl_multi_getcontent($channel);
@@ -200,10 +198,11 @@ class marathonbet extends ParsingAbstractClass
                             ];
                         }
                     }
-                    curl_multi_remove_handle($this->mh, $channel);
                     \phpQuery::unloadDocuments();
-                    curl_close($channel);
+                    gc_collect_cycles();
                 }
+                curl_multi_remove_handle($this->mh, $channel);
+                curl_close($channel);
             }
         }
         return $matchesArray;
