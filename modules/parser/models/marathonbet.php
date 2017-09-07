@@ -38,7 +38,6 @@ class marathonbet extends ParsingAbstractClass
                 $tmpMatches[] = $matches[$j+$i];
             }
             $channels = $this->proceedUrls($tmpMatches);
-            $u = 0;
             foreach ($channels as $key => $channel) {
                 $html = curl_multi_getcontent($channel);
                 if ($html) {
@@ -159,7 +158,6 @@ class marathonbet extends ParsingAbstractClass
             for ($j=0; $j<$this->connections && $j+$i<count($leages); $j++) {
                 $tmpLeages[] = $leages[$j+$i];
             }
-            $u = 0;
             $channels = $this->proceedUrls($tmpLeages);
             foreach ($channels as $key => $channel) {
                 $html = curl_multi_getcontent($channel);

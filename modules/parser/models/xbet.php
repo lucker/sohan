@@ -67,7 +67,6 @@ class xbet extends ParsingAbstractClass
                     }
                 }
                 curl_multi_remove_handle($this->mh, $channel);
-                \phpQuery::unloadDocuments();
                 curl_close($channel);
             }
         }
@@ -84,9 +83,6 @@ class xbet extends ParsingAbstractClass
             for ($j=0; $j<$this->connections && $j+$i<count($leages); $j++) {
                 $tmpLeages[] = $leages[$j+$i];
             }
-            /*echo '<pre>';
-            print_r($tmpLeages);
-            echo '</pre>';*/
             $channels = $this->proceedUrls($tmpLeages);
             foreach ($channels as $key => $channel) {
                 $html = curl_multi_getcontent($channel);
@@ -101,7 +97,6 @@ class xbet extends ParsingAbstractClass
                     }
                 }
                 curl_multi_remove_handle($this->mh, $channel);
-                \phpQuery::unloadDocuments();
                 curl_close($channel);
             }
         }
@@ -133,7 +128,6 @@ class xbet extends ParsingAbstractClass
                 }
             }
             curl_multi_remove_handle($this->mh, $channel);
-            \phpQuery::unloadDocuments();
             curl_close($channel);
         }
         return $urls;

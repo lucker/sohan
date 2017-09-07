@@ -138,9 +138,10 @@ class sportingbetru extends ParsingAbstractClass
                             $this->insertEvents($matchId, $totalsArray[$k]['handicap'], $eventName, $totalsArray[$k]['odds'], 3);
                         }
                     }
+                    \phpQuery::unloadDocuments();
+                    gc_collect_cycles();
                 }
                 curl_multi_remove_handle($this->mh, $channel);
-                \phpQuery::unloadDocuments();
                 curl_close($channel);
             }
         }
@@ -155,36 +156,39 @@ class sportingbetru extends ParsingAbstractClass
         $channels = $this->proceedUrls($url);
         foreach ($channels as $key => $channel) {
             $html = curl_multi_getcontent($channel);
-            $document = \phpQuery::newDocument($html);
-            $events = pq($document)
-                ->find('div#events')
-                ->find('div.box');
-            foreach ($events as $event) {
-                $as = pq($event)
-                    ->find('div.dd')
-                    ->find('a');
-                foreach ($as as $a) {
-                    $href = pq($a)->attr('href');
-                    $name = pq($a)->text();
-                    //echo $href.' '.$name.'<br>';
-                    //
-                    $arrayParamsForUrl = $this
-                        ->parseUrl($href);
-                    $url = $this->base . '/services/CouponTemplate.mvc/GetCoupon?couponAction=EVENTCLASSCOUPON' .
-                        '&sportIds=' . $arrayParamsForUrl[1] .
-                        '&marketTypeId=&eventId=&bookId=&' .
-                        'eventClassId=' . $arrayParamsForUrl[2] .
-                        '&sportId=' . $arrayParamsForUrl[1] . '&eventTimeGroup=';
-                    if (('По ходу матча - Пятница'!=$name) && ('По ходу матча - Суббота'!=$name) && ('По ходу матча - Воскресенье'!=$name) && ('Купон на футбол'!=$name)) {
-                        $leages[] = [
-                            'text' => $name,
-                            'href' => $url
-                        ];
+            if ($html) {
+                $document = \phpQuery::newDocument($html);
+                $events = pq($document)
+                    ->find('div#events')
+                    ->find('div.box');
+                foreach ($events as $event) {
+                    $as = pq($event)
+                        ->find('div.dd')
+                        ->find('a');
+                    foreach ($as as $a) {
+                        $href = pq($a)->attr('href');
+                        $name = pq($a)->text();
+                        //echo $href.' '.$name.'<br>';
+                        //
+                        $arrayParamsForUrl = $this
+                            ->parseUrl($href);
+                        $url = $this->base . '/services/CouponTemplate.mvc/GetCoupon?couponAction=EVENTCLASSCOUPON' .
+                            '&sportIds=' . $arrayParamsForUrl[1] .
+                            '&marketTypeId=&eventId=&bookId=&' .
+                            'eventClassId=' . $arrayParamsForUrl[2] .
+                            '&sportId=' . $arrayParamsForUrl[1] . '&eventTimeGroup=';
+                        if (('По ходу матча - Пятница' != $name) && ('По ходу матча - Суббота' != $name) && ('По ходу матча - Воскресенье' != $name) && ('Купон на футбол' != $name)) {
+                            $leages[] = [
+                                'text' => $name,
+                                'href' => $url
+                            ];
+                        }
                     }
                 }
+                \phpQuery::unloadDocuments();
+                gc_collect_cycles();
             }
             curl_multi_remove_handle($this->mh, $channel);
-            \phpQuery::unloadDocuments();
             curl_close($channel);
         }
         return $leages;
@@ -231,10 +235,12 @@ class sportingbetru extends ParsingAbstractClass
                             ];
                         }
                     }
-                    curl_multi_remove_handle($this->mh, $channel);
                     //вот здесь сука утечка памяти уродский гугл
                     \phpQuery::unloadDocuments();
+                    gc_collect_cycles();
                 }
+                curl_multi_remove_handle($this->mh, $channel);
+                curl_close($channel);
             }
         }
         return $matches;
