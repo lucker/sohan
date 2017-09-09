@@ -24,6 +24,8 @@ class ParsingAbstractClass extends insertEventsModel
     function __construct($bukid)
     {
         $this->bukid = $bukid;
+        // time zone
+        date_default_timezone_set('Etc/GMT-3');
         \Yii::$app->db
             ->createCommand("
                     UPDATE  `bukcontor`
@@ -105,7 +107,7 @@ class ParsingAbstractClass extends insertEventsModel
                 curl_setopt($ch, CURLOPT_PROXYUSERPWD, $this->proxyauth);
             }
             curl_setopt($ch, CURLOPT_FOLLOWLOCATION, TRUE);
-            curl_setopt($ch, CURLOPT_CONNECTTIMEOUT, 40);
+            curl_setopt($ch, CURLOPT_CONNECTTIMEOUT, 20);
             curl_multi_add_handle($this->mh, $ch);
             $channels[$key] = $ch;
         }
@@ -152,7 +154,7 @@ class ParsingAbstractClass extends insertEventsModel
             }
         }
         $headers[] = 'User-Agent: Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/58.0.3029.110 Safari/537.36';
-        $headers[] = "Accept-Encoding: gzip, deflate, sdch, br";
+        $headers[] = "Accept-Encoding: gzip";
         $headers[] = "Accept: text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,*/*;q=0.8";
         $headers[] = "Accept-Language: ru-RU,ru;q=0.8,en-US;q=0.6,en;q=0.4";
         $headers[] = "Connection: keep-alive";
@@ -173,7 +175,7 @@ class ParsingAbstractClass extends insertEventsModel
         $user_agent = 'User-Agent: Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/58.0.3029.110 Safari/537.36';
         $header = [
             "Accept: text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,*/*;q=0.8",
-            "Accept-Encoding: gzip, deflate, sdch, br",
+            "Accept-Encoding: gzip",
             "Upgrade-Insecure-Requests: 1",
             "Accept-Language: ru-RU,ru;q=0.8,en-US;q=0.6,en;q=0.4",
             "Connection: keep-alive"
