@@ -19,64 +19,9 @@ class DefaultController extends Controller
      * @return string
      */
     public $layout = 'main';
-    public function actionSportingbet()
-    {
-        $parsing = \Yii::$app->db
-            ->createCommand('
-                SELECT `parsing` FROM `bukcontor`
-                WHERE `id` = :id', [
-                ':id' => 3,
-            ])->queryScalar();
-        if (!$parsing) {
-            $start = microtime(true);
-            $sportingbetru = new sportingbetru;
-            $leages = $sportingbetru->getLeages();
-            $matches = $sportingbetru->getMatches($leages);
-            $sportingbetru->getEvents($matches);
-            echo 'Время выполнения скрипта: ' . (microtime(true) - $start) . ' сек.';
-        }
-    }
     //
-    public function actionXbet()
+    public function actionLeonbets()
     {
-        $parsing = \Yii::$app->db
-            ->createCommand('
-                SELECT `parsing` FROM `bukcontor`
-                WHERE `id` = :id', [
-                ':id' => 1,
-            ])->queryScalar();
-        if (!$parsing) {
-            $start = microtime(true);
-            $xbet = new xbet;
-            $leages = $xbet->getLeages();
-            $matches = $xbet->getMatches($leages);
-            $xbet->getEvents($matches);
-            echo 'Время выполнения скрипта: '.(microtime(true) - $start).' сек.';
-        }
-    }
-    //
-    public function actionMarathonbet()
-    {
-        $parsing = \Yii::$app->db
-            ->createCommand('
-                SELECT `parsing` FROM `bukcontor`
-                WHERE `id` = :id', [
-                ':id' => 2,
-            ])->queryScalar();
-        if (!$parsing) {
-            $start = microtime(true);
-            $marathonbet = new marathonbet;
-            $leages = $marathonbet->getLeages();
-            /*echo "<pre>";
-            print_r($leages);
-            echo '<pre>';*/
-            $matches = $marathonbet->getMatches($leages);
-            $marathonbet->getEvents($matches);
-            echo 'Время выполнения скрипта(events): ' . (microtime(true) - $start) . ' сек.';
-        }
-    }
-    //
-    public function actionLeonbets() {
         $leonbet = new leonbets();
         $leages = $leonbet->getLeages();
 
@@ -90,5 +35,63 @@ class DefaultController extends Controller
     //
     public function actionTest()
     {
+        $start = microtime(true);
+        $marathon = new marathonbet();
+        //$marathon->getLeages();
+        //$marathon->getMatches();
+        //$marathon->getEvents();
+        echo 'Время выполнения скрипта(events): ' . (microtime(true) - $start) . ' сек.';
+    }
+    //
+    public function actionMarathonbetleagesparsing()
+    {
+        $marathon = new marathonbet();
+        $marathon->getLeages();
+    }
+    //
+    public function actionMarathonbetmatchesparsing()
+    {
+        $start = microtime(true);
+        $marathon = new marathonbet();
+        $marathon->getMatches();
+        echo 'Время выполнения скрипта(events): ' . (microtime(true) - $start) . ' сек.';
+    }
+    //
+    public function actionMarathonbeteventsparsing()
+    {
+        $marathon = new marathonbet();
+        $marathon->getEvents();
+    }
+    //
+    public function actionXbetleagesparsing()
+    {
+        $xbet = new xbet();
+        $xbet->getLeages();
+    }
+    //
+    public function actionXbetmatchesparsing()
+    {
+        $xbet = new xbet();
+        $xbet->getMatches();
+    }
+    //
+    public function actionSportingbetleagesparsing()
+    {
+        $sportingbet = new Sportingbetru();
+        $sportingbet->getLeages();
+    }
+    //
+    public function actionSportingbetmatchesparsing()
+    {
+        $sportingbet = new Sportingbetru();
+        $sportingbet->getMatches();
+    }
+    //
+    public function actionSportingbeteventsparsing()
+    {
+        $start = microtime(true);
+        $sportingbet = new Sportingbetru();
+        $sportingbet->getEvents();
+        echo 'Время выполнения скрипта(events): ' . (microtime(true) - $start) . ' сек.';
     }
 }

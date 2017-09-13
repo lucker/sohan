@@ -22,8 +22,6 @@ class xbet extends ParsingAbstractClass
         parent::__construct(1);
         $this->url = 'https://1xbetua.com/line/Football/';
         $this->connections = 20;
-        // time zone
-        date_default_timezone_set('Etc/GMT-3');
     }
     /**
      * xbet destructor
@@ -72,12 +70,21 @@ class xbet extends ParsingAbstractClass
         }
     }
     /**
-     * @param $leages лиги
      * @return array матчи
      */
-    public function getMatches($leages)
+    public function getMatches()
     {
-        $matches = [];
+        $leages = Yii::$app->db
+            ->createCommand('
+                SELECT 
+                 id,
+                 parsing_url as href,
+                 `name` as text
+                FROM `leages` 
+                WHERE `bukid` = :bukid
+                AND parsing_url IS NOT NULL', [
+                ':bukid' => $this->bukid
+            ])->queryAll();
         for ($i=0; $i<count($leages); $i=$i+$this->connections) {
             $tmpLeages = [];
             for ($j=0; $j<$this->connections && $j+$i<count($leages); $j++) {
@@ -90,9 +97,9 @@ class xbet extends ParsingAbstractClass
                     $json = json_decode(gzdecode($html));
                     if (isset($json->Value)) {
                         foreach ($json->Value as $val) {
-                            $matches[] = [
+                            /*$matches[] = [
                                 "href" => "https://1xbetua.com/LineFeed/GetGameZip?id={$val->CI}&lng=ru&cfview=0&isSubGames=true&GroupEvents=true&countevents=20"
-                            ];
+                            ];*/
                         }
                     }
                 }
@@ -119,10 +126,12 @@ class xbet extends ParsingAbstractClass
                 if (isset($json->Value)) {
                     foreach ($json->Value as $val) {
                         if (isset($val->LE)) {
-                            $urls[] = [
+                            /*$urls[] = [
                                 'href' => "https://1xbetua.com/LineFeed/Get1x2_Zip?champs={$val->LI}&sports=1&count=50&tf=1000000&tz=3&mode=4&country=2",
                                 'text' => $val->LE
-                            ];
+                            ];*/
+                            $this->insertLeage($val->LE, 1,
+                                "https://1xbetua.com/LineFeed/Get1x2_Zip?champs={$val->LI}&sports=1&count=50&tf=1000000&tz=3&mode=4&country=2");
                         }
                     }
                 }

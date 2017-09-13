@@ -54,11 +54,17 @@ class insertEventsModel
         return $id;
     }
     //insert matches
-    public function insertMatch($teamIds, $leage, $date, $bukid, $url)
+    public function insertMatch($teamIds, $leage, $date, $bukid, $url, $parsingUrl)
     {
+        $id = 0;
         $selected = Yii::$app->db
             ->createCommand('
-                SELECT id FROM matches
+                SELECT 
+                    id, 
+                    url, 
+                    parsing_url,
+                    leage
+                FROM matches
                 WHERE `team1` = :team1
                 AND `team2` = :team2
                 AND `bukid` = :bukid
@@ -67,65 +73,53 @@ class insertEventsModel
                     ':team2' => $teamIds[1],
                     ':date' => $date,
                     ':bukid' => $bukid
-            ])->queryScalar();
-        $id = $selected;
+            ])->queryOne();
         if (!$selected) {
             Yii::$app->db
                 ->createCommand("
-                    INSERT INTO matches (`id`, `team1`, `team2`, `leage`, `date`, `bukid`, `inserted_date`, `url`)
-                    VALUES (NULL, :team1, :team2, :leage, :date, :bukid, :insert_date, :url)", [
+                    INSERT INTO matches (`id`, `team1`, `team2`, `leage`, `date`, `bukid`, `inserted_date`, `url`, `parsing_url`)
+                    VALUES (NULL, :team1, :team2, :leage, :date, :bukid, :insert_date, :url, :parsing_url)", [
                         ':team1' => $teamIds[0],
                         ':team2' => $teamIds[1],
                         ':leage' => $leage,
                         ':date' => $date,
                         ':bukid' => $bukid,
                         ':insert_date' => date('Y-m-d H:i:s'),
-                        ':url' => $url
+                        ':url' => $url,
+                        ':parsing_url' => $parsingUrl
                 ])->execute();
             $id = Yii::$app->db
                 ->getLastInsertID();
         } else {
+            $id = $selected['id'];
             // проверяем урл изменился ли
-            $urlSelected = Yii::$app->db
-                ->createCommand('
-                SELECT url FROM matches
-                WHERE `team1` = :team1
-                AND `team2` = :team2
-                AND `bukid` = :bukid
-                AND `date` = :date', [
-                    ':team1' => $teamIds[0],
-                    ':team2' => $teamIds[1],
-                    ':date' => $date,
-                    ':bukid' => $bukid
-                ])->queryScalar();
-            if ($url != $urlSelected) {
+            if ($url != $selected['url']) {
                 $sql = "
                     UPDATE `matches` 
                     SET `url`='{$url}'
-                    WHERE `id`={$selected}
+                    WHERE `id`={$id}
                 ";
                 Yii::$app->db
                     ->createCommand($sql)
                     ->execute();
             }
             // проверяем изменилась ли лига
-            $leageSelected = Yii::$app->db
-                ->createCommand('
-                SELECT leage FROM matches
-                WHERE `team1` = :team1
-                AND `team2` = :team2
-                AND `bukid` = :bukid
-                AND `date` = :date', [
-                    ':team1' => $teamIds[0],
-                    ':team2' => $teamIds[1],
-                    ':date' => $date,
-                    ':bukid' => $bukid
-                ])->queryScalar();
-            if ($leage != $leageSelected) {
+            if ($leage != $selected['leage']) {
                 $sql = "
                     UPDATE `matches` 
                     SET `leage`='{$leage}'
-                    WHERE `id`={$selected}
+                    WHERE `id`={$id}
+                ";
+                Yii::$app->db
+                    ->createCommand($sql)
+                    ->execute();
+            }
+            // проверяем изменился ли урл для парсинга
+            if ($parsingUrl != $selected['parsing_url']) {
+                $sql = "
+                    UPDATE `matches` 
+                    SET `parsing_url`='{$parsingUrl}'
+                    WHERE `id`={$id}
                 ";
                 Yii::$app->db
                     ->createCommand($sql)
@@ -135,29 +129,42 @@ class insertEventsModel
         return $id;
     }
     //insert leages
-    public function insertLeage($name, $bukid)
+    public function insertLeage($name, $bukid, $parsingUrl)
     {
         $leageId = 0;
         $haveLeages = Yii::$app->db
             ->createCommand('
-                    SELECT id FROM `leages` 
-                    WHERE `name` = :name AND `bukid` = :bukid', [
+                    SELECT id, parsing_url 
+                    FROM `leages` 
+                    WHERE `name` = :name 
+                    AND `bukid` = :bukid', [
                 ':name' => $name,
                 ':bukid' => $bukid
-            ])->queryScalar();
+            ])->queryOne();
         //запись лиги
-        if(!$haveLeages) {
+        if (!$haveLeages) {
             Yii::$app->db
                 ->createCommand('
-                    INSERT INTO  `leages` (`id` ,`name` ,`bukid`)
-                    VALUES (NULL ,  :name,  :bukid);', [
+                    INSERT INTO  `leages` (`id`, `name`, `bukid`, `parsing_url`)
+                    VALUES (NULL ,  :name,  :bukid, :url);', [
                     ':name' => $name,
-                    ':bukid' => $bukid
+                    ':bukid' => $bukid,
+                    ':url' => $parsingUrl
                 ])->execute();
             $leageId = Yii::$app->db
                 ->getLastInsertID();
         } else {
-            $leageId = $haveLeages;
+            $leageId = $haveLeages['id'];
+            if ($parsingUrl!=$haveLeages['parsing_url']) {
+                $sql = "
+                    UPDATE `leages` 
+                    SET `parsing_url` = '{$parsingUrl}'
+                    WHERE `id`={$leageId}
+                ";
+                Yii::$app->db
+                    ->createCommand($sql)
+                    ->execute();
+            }
         }
         return $leageId;
     }

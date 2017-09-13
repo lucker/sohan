@@ -16,6 +16,8 @@ class TotalsWidget extends Widget
     public function init()
     {
         parent::init();
+        // time zone
+        date_default_timezone_set('Etc/GMT-3');
         //сама логика
         $tbArray = [];
         for ($i=1; $i<=3; $i++) {
@@ -123,8 +125,8 @@ class TotalsWidget extends Widget
                                     'leage' => $tmArray[$k][$m]['name'],
                                     'bukname' => $tmArray[$k][$m]['bukname'],
                                     'odd' => $tmArray[$k][$m]['odd'],
-                                    'url' => $tbArray[$k][$m]['url'],
-                                    'update_date' => $tbArray[$k][$m]['update_date']
+                                    'url' => $tmArray[$k][$m]['url'],
+                                    'update_date' => $tmArray[$k][$m]['update_date']
                                 ];
                             }
                         }

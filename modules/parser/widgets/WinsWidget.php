@@ -9,10 +9,12 @@ class WinsWidget extends Widget
     public function init()
     {
         parent::init();
+        // time zone
+        date_default_timezone_set('Etc/GMT-3');
         //сама логика
         $resArray = [];
 
-        for ($i=1; $i<=3; $i++) {
+        for ($i = 1; $i <= 3; $i++) {
             $sql = "
                 SELECT
                     t1.name as team1,
@@ -56,23 +58,24 @@ class WinsWidget extends Widget
         $team1 = '';
         $i = 1;
         //for ($i=1; $i<=3; $i++) {
-        for ($j=0; $j<count($resArray[$i]); $j=$j+3) {
+        for ($j = 0; $j < count($resArray[$i]); $j = $j + 3) {
             $currentOdds = [];
-            for ($k=1; $k<=3; $k++) {
-                for($m=0; $m<count($resArray[$k]); $m=$m+3) {
+            for ($k = 1; $k <= 3; $k++) {
+                for ($m = 0; $m < count($resArray[$k]); $m = $m + 3) {
                     //совпадение команд в другой конторе
                     if ($resArray[$i][$j]['t1group'] == $resArray[$k][$m]['t1group'] && $resArray[$i][$j]['t2group'] == $resArray[$k][$m]['t2group']
-                        && $resArray[$i][$j]['date'] == $resArray[$k][$m]['date']) {
-                        for ($nameId=0; $nameId<3; $nameId++) {
+                        && $resArray[$i][$j]['date'] == $resArray[$k][$m]['date']
+                    ) {
+                        for ($nameId = 0; $nameId < 3; $nameId++) {
                             $currentOdds[$nameId + 1][] = [
-                                'odd' => $resArray[$k][$m+$nameId]['odd'],
-                                'team1' => $resArray[$k][$m+$nameId]['team1'],
-                                'team2' => $resArray[$k][$m+$nameId]['team2'],
-                                'bukname' => $resArray[$k][$m+$nameId]['bukname'],
-                                'date' => $resArray[$k][$m+$nameId]['date'],
-                                'leage' => $resArray[$k][$m+$nameId]['name'],
-                                'update_date' => $resArray[$k][$m+$nameId]['update_date'],
-                                'url' => $resArray[$k][$m+$nameId]['url']
+                                'odd' => $resArray[$k][$m + $nameId]['odd'],
+                                'team1' => $resArray[$k][$m + $nameId]['team1'],
+                                'team2' => $resArray[$k][$m + $nameId]['team2'],
+                                'bukname' => $resArray[$k][$m + $nameId]['bukname'],
+                                'date' => $resArray[$k][$m + $nameId]['date'],
+                                'leage' => $resArray[$k][$m + $nameId]['name'],
+                                'update_date' => $resArray[$k][$m + $nameId]['update_date'],
+                                'url' => $resArray[$k][$m + $nameId]['url']
                             ];
                         }
                     }
@@ -80,7 +83,7 @@ class WinsWidget extends Widget
             }
             $odds[] = $currentOdds;
         }
-        //}
+    //}
         /*echo '<pre>';
         print_r($odds);
         echo '</pre>';
