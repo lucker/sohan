@@ -59,8 +59,10 @@ class DefaultController extends Controller
     //
     public function actionMarathonbeteventsparsing()
     {
+        $start = microtime(true);
         $marathon = new marathonbet();
         $marathon->getEvents();
+        echo 'Время выполнения скрипта(events): ' . (microtime(true) - $start) . ' сек.';
     }
     //
     public function actionXbetleagesparsing()
