@@ -18,11 +18,7 @@ class parserModule extends \yii\base\Module
     public function init()
     {
         //phpQuery для парсинга
-        include $_SERVER['DOCUMENT_ROOT']."/parser/simple_html_dom.php";
-        include $_SERVER['DOCUMENT_ROOT']."/parser/phpQuery.php";
-
+        include "/var/www/html/parser/phpQuery.php";
         parent::init();
-
-        // custom initialization code goes here
     }
 }
