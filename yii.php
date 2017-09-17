@@ -16,13 +16,13 @@ require(__DIR__ . '/vendor/yiisoft/yii2/Yii.php');
 $config = require(__DIR__ . '/config/console.php');
 
 // ЗДЕСЬ!!! Вставленный нами код
-if( isset($_GET['r']) and !empty($_GET['r'])){
+/*if( isset($_GET['r']) and !empty($_GET['r'])){
 	$_SERVER['argv'] =  [
                                 '~/home/dev/www/projectFolder/yii',
                                 $_GET['r']
                             ];
 	$_SERVER['argc'] = 2;
-}
+}*/
 
 $application = new yii\console\Application($config);
 $exitCode = $application->run();

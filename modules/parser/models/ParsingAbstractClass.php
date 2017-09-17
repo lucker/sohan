@@ -116,14 +116,8 @@ class ParsingAbstractClass extends insertEventsModel
         }
 
         //запускаем дескрипторы
-        curl_multi_exec($this->mh, $running);
-        do
-        {
-            if (curl_multi_select($this->mh, 99) === -1)
-            {
-                usleep(2500);
-                continue;
-            }
+        $running = null;
+        do {
             curl_multi_exec($this->mh, $running);
         } while ($running);
 
