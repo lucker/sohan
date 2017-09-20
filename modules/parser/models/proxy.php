@@ -18,6 +18,7 @@ class proxy
      */
     public function testProxy()
     {
+        header('X-Accel-Buffering: no');
         $url = 'https://www.google.com.ua';
         $sql = '
             SELECT id, proxy
@@ -33,32 +34,27 @@ class proxy
             curl_setopt($ch, CURLOPT_URL, $url);
             curl_setopt($ch, CURLOPT_HEADER, false);
             curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
-            curl_setopt($ch, CURLOPT_PROXY, $proxy[$i]['proxy'].':8080');
+            curl_setopt($ch, CURLOPT_PROXYTYPE, CURLPROXY_SOCKS5);
+            curl_setopt($ch, CURLOPT_PROXY, $proxy[$i]['proxy'].':1080');
             curl_setopt($ch, CURLOPT_PROXYUSERPWD, $this->proxyauth);
             curl_setopt($ch, CURLOPT_FOLLOWLOCATION, 1);
+            curl_setopt($ch, CURLOPT_CONNECTTIMEOUT, 20);
             curl_multi_add_handle($mh, $ch);
             $channels[$i] = $ch;
         }
-        $active = null;
         //запускаем дескрипторы
+        $running = null;
         do {
-            $mrc = curl_multi_exec($mh, $active);
-        } while ($mrc == CURLM_CALL_MULTI_PERFORM);
-
-        while ($active && $mrc == CURLM_OK) {
-            if (curl_multi_select($mh) != -1) {
-                do {
-                    $mrc = curl_multi_exec($mh, $active);
-                } while ($mrc == CURLM_CALL_MULTI_PERFORM);
-            }
-        }
+            curl_multi_exec($mh, $running);
+            /*echo $running;
+            echo '<br>';
+            ob_flush();
+            flush();*/
+        } while ($running);
 
 
         for ($i=0; $i<count($channels); $i++) {
             $res = curl_multi_getcontent($channels[$i]);
-            /*echo $res;
-            ob_flush();
-            flush();*/
             if ($res) {
                 \Yii::$app->db
                     ->createCommand("UPDATE `proxy` SET `working`='1' WHERE (`id`='{$proxy[$i]['id']}')")

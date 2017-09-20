@@ -16,7 +16,6 @@ class ParsingAbstractClass extends insertEventsModel
     protected $proxyauth;
     protected $headers;
     protected $base;
-    protected $useproxy;
     protected $bukid;
     /**
      * ParsingAbstractClass constructor.
@@ -33,7 +32,6 @@ class ParsingAbstractClass extends insertEventsModel
                     WHERE  `bukcontor`.`id` = :id;", [
                 ':id' => $this->bukid,
             ])->execute();
-        $this->useproxy = 1;
         $this->mh = curl_multi_init();
         $this->proxyauth = 'luckeri:celopasy';
         $url = \Yii::$app->db
@@ -42,7 +40,9 @@ class ParsingAbstractClass extends insertEventsModel
                 WHERE `id` = :id', [
                 ':id' => $bukid,
             ])->queryScalar();
-        $redirectUrl = $this->getBaseUrl($url);
+        $this->headers = $this->getHeaders($url);
+        $this->base = $url;
+        /*$redirectUrl = $this->getBaseUrl($url);
         if (!empty($redirectUrl)) {
             \Yii::$app->db
                 ->createCommand("
@@ -56,7 +56,7 @@ class ParsingAbstractClass extends insertEventsModel
         } else {
             $this->base = $url;
             $this->headers = $this->getHeaders($url);
-        }
+        }*/
     }
     /**
      * ParsingAbstractClass desctuctor.
@@ -80,7 +80,7 @@ class ParsingAbstractClass extends insertEventsModel
         $sql = '
             SELECT *
             FROM proxy
-            WHERE working = 1
+            -- WHERE working = 1
         ';
         $proxy = \Yii::$app->db
             ->createCommand($sql)
@@ -95,22 +95,20 @@ class ParsingAbstractClass extends insertEventsModel
     public function proceedUrls($urls)
     {
         $channels = [];
-        $proxy = $this->getProxy();
+        $proxy = [];
+        foreach ($this->headers as $key => $val) {
+            $proxy[] = $key;
+        }
         foreach ($urls as $key => $url) {
             $ch = curl_init();
             curl_setopt($ch, CURLOPT_URL, $url['href']);
-            curl_setopt($ch, CURLOPT_HTTPHEADER, $this->headers);
+            curl_setopt($ch, CURLOPT_HTTPHEADER, $this->headers[$proxy[$key%count($proxy)]]);
             curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
-            curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, 0);
-            if ($this->useproxy) {
-                curl_setopt($ch, CURLOPT_PROXY, $proxy[$key % count($proxy)]['proxy'] . ':8080');
-                curl_setopt($ch, CURLOPT_PROXYUSERPWD, $this->proxyauth);
-            }
+            curl_setopt($ch, CURLOPT_PROXY, $proxy[$key % count($proxy)].':8080');
+            curl_setopt($ch, CURLOPT_PROXYUSERPWD, $this->proxyauth);
             curl_setopt($ch, CURLOPT_FOLLOWLOCATION, TRUE);
-            curl_setopt($ch, CURLOPT_CONNECTTIMEOUT, 20);
-            /*$res= curl_exec($ch);
-            echo $res;
-            exit;*/
+            curl_setopt($ch, CURLOPT_CONNECTTIMEOUT, 5);
+            curl_setopt($ch, CURLOPT_VERBOSE, 1);
             curl_multi_add_handle($this->mh, $ch);
             $channels[$key] = $ch;
         }
@@ -119,35 +117,75 @@ class ParsingAbstractClass extends insertEventsModel
         $running = null;
         do {
             curl_multi_exec($this->mh, $running);
+            curl_multi_select($this->mh);
+            /*echo $running.' ';
+            ob_flush();
+            flush();*/
         } while ($running);
 
         return $channels;
     }
     /*
-     * Получаем куки и записывем их в заголовок
+     * Получаем куки и записывем их в заголовок по каждому проксику
      */
     public function getHeaders($url)
     {
-        stream_context_set_default([
-            'ssl' => [
-                'verify_peer' => false,
-                'verify_peer_name' => false,
-            ],
-        ]);
         $headers = [];
-        $setHeaders = get_headers($url);
-        /*print_r($setHeaders);
-        exit;*/
-        foreach($setHeaders as $header){
-            if(strpos($header,'Set-Cookie:') !== false){
-                $headers[] = str_replace('Set-Cookie:', 'Cookie:', $header);
-            }
+        $channels = [];
+        $proxy = $this->getProxy();
+        foreach ($proxy as $key => $val) {
+            $ch = curl_init();
+            curl_setopt($ch, CURLOPT_URL, $url);
+            $user_agent = 'User-Agent: Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/58.0.3029.110 Safari/537.36';
+            $header = [
+                "Accept: text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,*/*;q=0.8",
+                "Accept-Encoding: gzip",
+                "Upgrade-Insecure-Requests: 1",
+                "Accept-Language: ru-RU,ru;q=0.8,en-US;q=0.6,en;q=0.4",
+                "Connection: keep-alive"
+            ];
+            curl_setopt($ch, CURLOPT_HTTPHEADER, $header);
+            curl_setopt($ch, CURLOPT_USERAGENT, $user_agent);
+            curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
+            curl_setopt($ch, CURLOPT_PROXY, $proxy[$key]['proxy'].':8080');
+            curl_setopt($ch, CURLOPT_PROXYUSERPWD, $this->proxyauth);
+            curl_setopt($ch, CURLOPT_NOBODY, true);
+            curl_setopt($ch, CURLOPT_FOLLOWLOCATION, TRUE);
+            curl_setopt($ch, CURLOPT_CONNECTTIMEOUT, 5);
+            curl_setopt($ch, CURLOPT_HEADER, 1);
+            curl_multi_add_handle($this->mh, $ch);
+            $channels[$key] = $ch;
         }
-        $headers[] = 'User-Agent: Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/58.0.3029.110 Safari/537.36';
-        $headers[] = "Accept-Encoding: gzip";
-        $headers[] = "Accept: text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,*/*;q=0.8";
-        $headers[] = "Accept-Language: ru-RU,ru;q=0.8,en-US;q=0.6,en;q=0.4";
-        $headers[] = "Connection: keep-alive";
+        // запускаем дескрипторы
+        $running = null;
+        do {
+            curl_multi_exec($this->mh, $running);
+            curl_multi_select($this->mh);
+        } while ($running);
+        // обрабатываем
+        foreach ($channels as $key => $channel) {
+            $out = curl_multi_getcontent($channel);
+            $info = curl_getinfo($channel);
+            /*echo '<pre>';
+            print_r($info);
+            echo '</pre>';*/
+            if ($info['http_code']==200) {
+                preg_match_all('/Set-Cookie: .{1,};/', $out, $matches);
+                foreach ($matches[0] as $match) {
+                    $headers[$proxy[$key]['proxy']][] = str_replace('Set-Cookie:', 'Cookie:', $match);
+                }
+                $headers[$proxy[$key]['proxy']][] = 'User-Agent: Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/58.0.3029.110 Safari/537.36';
+                $headers[$proxy[$key]['proxy']][] = "Accept-Encoding: gzip";
+                $headers[$proxy[$key]['proxy']][] = "Accept: text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,*/*;q=0.8";
+                $headers[$proxy[$key]['proxy']][] = "Accept-Language: ru-RU,ru;q=0.8,en-US;q=0.6,en;q=0.4";
+                $headers[$proxy[$key]['proxy']][] = "Connection: keep-alive";
+            }
+            curl_multi_remove_handle($this->mh, $channel);
+            curl_close($channel);
+        }
+        /*echo '<pre>';
+        print_r($headers);
+        echo '</pre>';*/
         return $headers;
     }
     /*
@@ -157,6 +195,7 @@ class ParsingAbstractClass extends insertEventsModel
      */
     public function getBaseUrl($url)
     {
+        $proxy = $this->getProxy();
         $redirectUrl = $url;
         $curl = curl_init();
         curl_setopt($curl, CURLOPT_URL, $url);
@@ -172,7 +211,11 @@ class ParsingAbstractClass extends insertEventsModel
         ];
         curl_setopt($curl, CURLOPT_HTTPHEADER, $header);
         curl_setopt($curl, CURLOPT_USERAGENT, $user_agent);
-        curl_exec($curl);
+        curl_setopt($curl, CURLOPT_PROXYTYPE, CURLPROXY_SOCKS5);
+        curl_setopt($curl, CURLOPT_PROXYUSERPWD, $this->proxyauth);
+        curl_setopt($curl, CURLOPT_PROXY, $proxy[$key % count($proxy)]['proxy'].':1080');
+        $out = curl_exec($curl);
+        echo $out;
         $info = curl_getinfo($curl);
         curl_close($curl);
         if (isset($info['redirect_url'])) {

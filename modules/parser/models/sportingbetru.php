@@ -15,8 +15,7 @@ class sportingbetru extends ParsingAbstractClass
     public function __construct()
     {
         parent::__construct(3);
-        $this->useproxy = 0;
-        $this->connections = 20;
+        $this->connections = count($this->headers);
     }
     public function __destruct()
     {
@@ -150,6 +149,10 @@ class sportingbetru extends ParsingAbstractClass
                     }
                     \phpQuery::unloadDocuments();
                     gc_collect_cycles();
+                } else {
+                    /*echo $u; echo '<br>';
+                    ob_flush();
+                    flush();*/
                 }
                 curl_multi_remove_handle($this->mh, $channel);
                 curl_close($channel);
@@ -159,7 +162,6 @@ class sportingbetru extends ParsingAbstractClass
 
     public function getLeages()
     {
-        $leages = [];
         $url[] = [
             'href' => $this->base.urlencode('/спорт-Футбол/0-102-410.html')
         ];
@@ -178,8 +180,6 @@ class sportingbetru extends ParsingAbstractClass
                     foreach ($as as $a) {
                         $href = pq($a)->attr('href');
                         $name = pq($a)->text();
-                        //echo $href.' '.$name.'<br>';
-                        //
                         $arrayParamsForUrl = $this
                             ->parseUrl($href);
                         $url = $this->base . '/services/CouponTemplate.mvc/GetCoupon?couponAction=EVENTCLASSCOUPON' .
@@ -198,7 +198,6 @@ class sportingbetru extends ParsingAbstractClass
             curl_multi_remove_handle($this->mh, $channel);
             curl_close($channel);
         }
-        return $leages;
     }
     public function getMatches()
     {
@@ -213,7 +212,7 @@ class sportingbetru extends ParsingAbstractClass
                 AND parsing_url IS NOT NULL', [
                 ':bukid' => $this->bukid
             ])->queryAll();
-        //$matches = [];
+        $u = 0;
         for ($i=0; $i<count($leages); $i=$i+$this->connections) {
             $tmpLeages = [];
             for ($j=0; $j<$this->connections && $j+$i<count($leages); $j++) {
@@ -223,6 +222,10 @@ class sportingbetru extends ParsingAbstractClass
             foreach ($channels as $key => $channel) {
                 $html = curl_multi_getcontent($channel);
                 if ($html) {
+                    echo $u; echo '<br>';
+                    ob_flush();
+                    flush();
+                    $u++;
                     $document = \phpQuery::newDocument(gzdecode($html));
                     $events = pq($document)
                         ->find('div.couponEvents > div > div.columns > div.eventInfo');
@@ -279,13 +282,18 @@ class sportingbetru extends ParsingAbstractClass
     //getTeams
     public function getTeams($teams)
     {
-        if(strpos($teams,' v ') === false) {
+        if (strpos($teams,' - ') !== false) {
             $teamsArray = explode(' - ', $teams);
             for ($i = 0; $i < count($teamsArray); $i++) {
                 $teamsArray[$i] = trim($teamsArray[$i]);
             }
-        } else {
+        } elseif(strpos($teams,' v ') !== false) {
             $teamsArray = explode(' v ', $teams);
+            for ($i = 0; $i < count($teamsArray); $i++) {
+                $teamsArray[$i] = trim($teamsArray[$i]);
+            }
+        } elseif(strpos($teams,' vs ') !== true) {
+            $teamsArray = explode(' vs ', $teams);
             for ($i = 0; $i < count($teamsArray); $i++) {
                 $teamsArray[$i] = trim($teamsArray[$i]);
             }
