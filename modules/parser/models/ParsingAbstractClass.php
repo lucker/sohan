@@ -108,31 +108,19 @@ class ParsingAbstractClass extends insertEventsModel
             }
             curl_setopt($ch, CURLOPT_FOLLOWLOCATION, TRUE);
             curl_setopt($ch, CURLOPT_CONNECTTIMEOUT, 20);
+            /*$res= curl_exec($ch);
+            echo $res;
+            exit;*/
             curl_multi_add_handle($this->mh, $ch);
             $channels[$key] = $ch;
         }
 
-        $active = null;
         //запускаем дескрипторы
+        $running = null;
         do {
-            $mrc = curl_multi_exec($this->mh, $active);
-        } while ($mrc == CURLM_CALL_MULTI_PERFORM);
-        while ($active && $mrc == CURLM_OK) {
-            if (curl_multi_select($this->mh) == -1) {
-                usleep(100);
-            }
-            do {
-                $mrc = curl_multi_exec($this->mh, $active);
-                /*$info = curl_multi_info_read($this->mh);
-                if ($info==false) {
-                    echo 'false';
-                } else {
-                    echo '<pre>';
-                    print_r($info);
-                    echo '</pre>';
-                }*/
-            } while ($mrc == CURLM_CALL_MULTI_PERFORM);
-        }
+            curl_multi_exec($this->mh, $running);
+        } while ($running);
+
         return $channels;
     }
     /*
@@ -148,6 +136,8 @@ class ParsingAbstractClass extends insertEventsModel
         ]);
         $headers = [];
         $setHeaders = get_headers($url);
+        /*print_r($setHeaders);
+        exit;*/
         foreach($setHeaders as $header){
             if(strpos($header,'Set-Cookie:') !== false){
                 $headers[] = str_replace('Set-Cookie:', 'Cookie:', $header);
