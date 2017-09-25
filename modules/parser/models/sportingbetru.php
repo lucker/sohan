@@ -16,6 +16,7 @@ class sportingbetru extends ParsingAbstractClass
     {
         parent::__construct(3);
         $this->connections = count($this->headers);
+        //$this->connections = 500;
     }
     public function __destruct()
     {
@@ -45,7 +46,7 @@ class sportingbetru extends ParsingAbstractClass
                 $html = curl_multi_getcontent($channel);
                 if ($html) {
                     $u++;
-                    echo $u; echo '<br>';
+                    echo 'урл номер '.$u; echo '<br>';
                     ob_flush();
                     flush();
                     $document = \phpQuery::newDocument(gzdecode($html));
@@ -89,8 +90,10 @@ class sportingbetru extends ParsingAbstractClass
                     for($k=0; $k<count($oddsArray); $k++) {
                         $groupId = $this->insertEventGroupName($oddsArray[$k]['groupName'], 3);
                         for($m=0; $m<count($oddsArray[$k]['eventNames']); $m++) {
-                            $eventName = $this->insertEventName($oddsArray[$k]['eventNames'][$m], 3, $groupId);
-                            $this->insertEvents($matches[$key+$i]['id'], null, $eventName, $oddsArray[$k]['odds'][$m], 3);
+                            if (!empty($oddsArray[$k]['odds'][$m])) {
+                                $eventName = $this->insertEventName($oddsArray[$k]['eventNames'][$m], 3, $groupId);
+                                $this->insertEvents($matches[$key + $i]['id'], null, $eventName, $oddsArray[$k]['odds'][$m], 3);
+                            }
                         }
                     }
                     //totals
@@ -139,12 +142,14 @@ class sportingbetru extends ParsingAbstractClass
                     // запись значений
                     for($k=0; $k<count($totalsArray); $k++) {
                         $groupId = $this->insertEventGroupName($totalsArray[$k]['groupName'], 3);
-                        if ($k % 2 == 0) {
-                            $eventName = $this->insertEventName('Тотал больше', 3, $groupId);
-                            $this->insertEvents($matches[$key+$i]['id'], $totalsArray[$k]['handicap'], $eventName, $totalsArray[$k]['odds'], 3);
-                        } else {
-                            $eventName = $this->insertEventName('Тотал меньше', 3, $groupId);
-                            $this->insertEvents($matches[$key+$i]['id'], $totalsArray[$k]['handicap'], $eventName, $totalsArray[$k]['odds'], 3);
+                        if (!empty($totalsArray[$k]['odds'])) {
+                            if ($k % 2 == 0) {
+                                $eventName = $this->insertEventName('Тотал больше', 3, $groupId);
+                                $this->insertEvents($matches[$key + $i]['id'], $totalsArray[$k]['handicap'], $eventName, $totalsArray[$k]['odds'], 3);
+                            } else {
+                                $eventName = $this->insertEventName('Тотал меньше', 3, $groupId);
+                                $this->insertEvents($matches[$key + $i]['id'], $totalsArray[$k]['handicap'], $eventName, $totalsArray[$k]['odds'], 3);
+                            }
                         }
                     }
                     \phpQuery::unloadDocuments();
@@ -155,7 +160,7 @@ class sportingbetru extends ParsingAbstractClass
                     flush();*/
                 }
                 curl_multi_remove_handle($this->mh, $channel);
-                curl_close($channel);
+                //curl_close($channel);
             }
         }
     }
@@ -212,7 +217,7 @@ class sportingbetru extends ParsingAbstractClass
                 AND parsing_url IS NOT NULL', [
                 ':bukid' => $this->bukid
             ])->queryAll();
-        $u = 0;
+        //$u = 0;
         for ($i=0; $i<count($leages); $i=$i+$this->connections) {
             $tmpLeages = [];
             for ($j=0; $j<$this->connections && $j+$i<count($leages); $j++) {
@@ -222,10 +227,10 @@ class sportingbetru extends ParsingAbstractClass
             foreach ($channels as $key => $channel) {
                 $html = curl_multi_getcontent($channel);
                 if ($html) {
-                    echo $u; echo '<br>';
+                    /*echo $u; echo '<br>';
                     ob_flush();
                     flush();
-                    $u++;
+                    $u++;*/
                     $document = \phpQuery::newDocument(gzdecode($html));
                     $events = pq($document)
                         ->find('div.couponEvents > div > div.columns > div.eventInfo');
