@@ -80,7 +80,6 @@ class ParsingAbstractClass extends insertEventsModel
         $sql = '
             SELECT *
             FROM proxy
-            -- WHERE working = 1
         ';
         $proxy = \Yii::$app->db
             ->createCommand($sql)
@@ -103,11 +102,12 @@ class ParsingAbstractClass extends insertEventsModel
             $ch = curl_init();
             curl_setopt($ch, CURLOPT_URL, $url['href']);
             curl_setopt($ch, CURLOPT_HTTPHEADER, $this->headers[$proxy[$key%count($proxy)]]);
+            curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, false);
             curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
             curl_setopt($ch, CURLOPT_PROXY, $proxy[$key % count($proxy)].':8080');
             curl_setopt($ch, CURLOPT_PROXYUSERPWD, $this->proxyauth);
             curl_setopt($ch, CURLOPT_FOLLOWLOCATION, TRUE);
-            curl_setopt($ch, CURLOPT_CONNECTTIMEOUT, 5);
+            curl_setopt($ch, CURLOPT_CONNECTTIMEOUT, 2);
             curl_setopt($ch, CURLOPT_VERBOSE, 1);
             curl_multi_add_handle($this->mh, $ch);
             $channels[$key] = $ch;
@@ -118,7 +118,11 @@ class ParsingAbstractClass extends insertEventsModel
         do {
             curl_multi_exec($this->mh, $running);
             curl_multi_select($this->mh);
-            /*echo $running.' ';
+            /*echo $running.' '.$res.' ';
+            echo '<pre>';
+            echo 'curl_info';
+            print_r(curl_multi_info_read($this->mh));
+            echo '</pre>';
             ob_flush();
             flush();*/
         } while ($running);
@@ -140,7 +144,7 @@ class ParsingAbstractClass extends insertEventsModel
             $header = [
                 "Accept: text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,*/*;q=0.8",
                 "Accept-Encoding: gzip",
-                "Upgrade-Insecure-Requests: 1",
+                //"Upgrade-Insecure-Requests: 1",
                 "Accept-Language: ru-RU,ru;q=0.8,en-US;q=0.6,en;q=0.4",
                 "Connection: keep-alive"
             ];
@@ -151,7 +155,7 @@ class ParsingAbstractClass extends insertEventsModel
             curl_setopt($ch, CURLOPT_PROXYUSERPWD, $this->proxyauth);
             curl_setopt($ch, CURLOPT_NOBODY, true);
             curl_setopt($ch, CURLOPT_FOLLOWLOCATION, TRUE);
-            curl_setopt($ch, CURLOPT_CONNECTTIMEOUT, 5);
+            curl_setopt($ch, CURLOPT_CONNECTTIMEOUT, 2);
             curl_setopt($ch, CURLOPT_HEADER, 1);
             curl_multi_add_handle($this->mh, $ch);
             $channels[$key] = $ch;
@@ -214,8 +218,8 @@ class ParsingAbstractClass extends insertEventsModel
         curl_setopt($curl, CURLOPT_PROXYTYPE, CURLPROXY_SOCKS5);
         curl_setopt($curl, CURLOPT_PROXYUSERPWD, $this->proxyauth);
         curl_setopt($curl, CURLOPT_PROXY, $proxy[$key % count($proxy)]['proxy'].':1080');
-        $out = curl_exec($curl);
-        echo $out;
+        /*$out = curl_exec($curl);
+        echo $out;*/
         $info = curl_getinfo($curl);
         curl_close($curl);
         if (isset($info['redirect_url'])) {
