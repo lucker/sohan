@@ -32,7 +32,7 @@ class SiteController extends Controller
             'name' => 'description',
             'content' => 'Сервис по онлайн поиску букмекерских вилок - sohan. Обновление каждые 5 минуты!'
         ]);
-        return $this->render('vilki');
+        return $this->render('index');
     }
 	// login
 	public function actionLogin()
@@ -127,6 +127,11 @@ class SiteController extends Controller
 		Yii::$app->view->params['description'] = 'Конкурс прогнозов с денежными призами - sohan.xyz';
 		return $this->render('konkurs');
 	}
+	//
+    public function actionPrematchVilki()
+    {
+        return $this->render('vilki');
+    }
 
     public function actions()
     {
