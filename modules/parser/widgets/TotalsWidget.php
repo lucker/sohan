@@ -20,7 +20,7 @@ class TotalsWidget extends Widget
         date_default_timezone_set('Etc/GMT-3');
         //сама логика
         $tbArray = [];
-        for ($i=1; $i<=3; $i++) {
+        for ($i=1; $i<=4; $i++) {
             $sql = "
                 SELECT
                     t1.name as team1,
@@ -56,7 +56,7 @@ class TotalsWidget extends Widget
             $tbArray[$i] = $res;
         }
         $tmArray = [];
-        for ($i=1; $i<=3; $i++) {
+        for ($i=1; $i<=4; $i++) {
             $sql = "
                 SELECT
                     t1.name as team1,
@@ -93,9 +93,9 @@ class TotalsWidget extends Widget
         }
 
         $res = [];
-        for ($i=1; $i<3; $i++) {
+        for ($i=0; $i<5; $i++) {
             for ($j=0; $j<count($tbArray[$i]); $j++) {
-                for ($k=1; $k<3; $k++) {
+                for ($k=0; $k<5; $k++) {
                     for ($m=0; $m<count($tmArray[$k]); $m++) {
                         //similar_text($tbArray[$i][$j]['team1'], $tmArray[$k][$m]['team1'], $percent1);
                         //similar_text($tbArray[$i][$j]['team2'], $tmArray[$k][$m]['team2'], $percent2);

@@ -14,7 +14,7 @@ class WinsWidget extends Widget
         //сама логика
         $resArray = [];
 
-        for ($i = 1; $i <= 3; $i++) {
+        for ($i = 1; $i <= 4; $i++) {
             $sql = "
                 SELECT
                     t1.name as team1,
@@ -60,7 +60,7 @@ class WinsWidget extends Widget
         //for ($i=1; $i<=3; $i++) {
         for ($j = 0; $j < count($resArray[$i]); $j = $j + 3) {
             $currentOdds = [];
-            for ($k = 1; $k <= 3; $k++) {
+            for ($k = 1; $k <= 4; $k++) {
                 for ($m = 0; $m < count($resArray[$k]); $m = $m + 3) {
                     //совпадение команд в другой конторе
                     if ($resArray[$i][$j]['t1group'] == $resArray[$k][$m]['t1group'] && $resArray[$i][$j]['t2group'] == $resArray[$k][$m]['t2group']
