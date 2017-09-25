@@ -2,6 +2,7 @@
 
 namespace app\modules\parser\controllers;
 
+use app\modules\parser\models\melbetaqp;
 use yii\web\Controller;
 use app\modules\parser\models\marathonbet;
 use app\modules\parser\models\sportingbetru;
@@ -18,13 +19,6 @@ class DefaultController extends Controller
      * @return string
      */
     public $layout = 'main';
-    //
-    public function actionLeonbets()
-    {
-        $leonbet = new leonbets();
-        $leages = $leonbet->getLeages();
-
-    }
     //
     public function actionCheckproxy()
     {
@@ -66,8 +60,10 @@ class DefaultController extends Controller
     public function actionMarathonbetLeagesParsing()
     {
         header('X-Accel-Buffering: no');
+        $start = microtime(true);
         $marathon = new marathonbet();
         $marathon->getLeages();
+        echo 'Время выполнения скрипта(events): ' . (microtime(true) - $start) . ' сек.';
     }
     //
     public function actionMarathonbetMatchesParsing()
@@ -80,29 +76,59 @@ class DefaultController extends Controller
     //
     public function actionMarathonbetEventsParsing()
     {
-        $start = microtime(true);
-        $marathon = new marathonbet();
-        $marathon->getEvents();
-        echo 'Время выполнения скрипта(events): ' . (microtime(true) - $start) . ' сек.';
+        $parsing = \Yii::$app->db
+            ->createCommand('
+                SELECT `parsing` FROM `bukcontor`
+                WHERE `id` = :id', [
+                    ':id' => 2
+                ])->queryScalar();
+        if (!$parsing) {
+            $start = microtime(true);
+            $marathon = new marathonbet();
+            $marathon->getEvents();
+            echo 'Время выполнения скрипта(events): ' . (microtime(true) - $start) . ' сек.';
+        }
     }
     //
     public function actionXbetLeagesParsing()
     {
+        $start = microtime(true);
         $xbet = new xbet();
         $xbet->getLeages();
+        echo 'Время выполнения скрипта(events): ' . (microtime(true) - $start) . ' сек.';
     }
     //
     public function actionXbetMatchesParsing()
     {
+        $start = microtime(true);
         $xbet = new xbet();
         $xbet->getMatches();
+        echo 'Время выполнения скрипта(events): ' . (microtime(true) - $start) . ' сек.';
+    }
+    //
+    public function actionXbetEventsParsing()
+    {
+        $parsing = \Yii::$app->db
+            ->createCommand('
+                SELECT `parsing` FROM `bukcontor`
+                WHERE `id` = :id', [
+                ':id' => 1
+            ])->queryScalar();
+        if (!$parsing) {
+            $start = microtime(true);
+            $xbet = new xbet();
+            $xbet->getEvents();
+            echo 'Время выполнения скрипта(events): ' . (microtime(true) - $start) . ' сек.';
+        }
     }
     //
     public function actionSportingbetLeagesParsing()
     {
         header('X-Accel-Buffering: no');
+        $start = microtime(true);
         $sportingbet = new Sportingbetru();
         $sportingbet->getLeages();
+        echo 'Время выполнения скрипта(events): ' . (microtime(true) - $start) . ' сек.';
     }
     //
     public function actionSportingbetMatchesParsing()
@@ -117,9 +143,41 @@ class DefaultController extends Controller
     public function actionSportingbetEventsParsing()
     {
         header('X-Accel-Buffering: no');
-        $start = microtime(true);
-        $sportingbet = new Sportingbetru();
-        $sportingbet->getEvents();
-        echo 'Время выполнения скрипта(events): ' . (microtime(true) - $start) . ' сек.';
+        $parsing = \Yii::$app->db
+            ->createCommand('
+                SELECT `parsing` FROM `bukcontor`
+                WHERE `id` = :id', [
+                ':id' => 3
+            ])->queryScalar();
+        if (!$parsing) {
+            $start = microtime(true);
+            $sportingbet = new Sportingbetru();
+            $sportingbet->getEvents();
+            echo 'Время выполнения скрипта(events): ' . (microtime(true) - $start) . ' сек.';
+        }
+    }
+    //
+    public function actionLeonbetsMatchesParsing()
+    {
+        $leonbets = new leonbets();
+        $leonbets->getMatches();
+    }
+    //
+    public function actionLeonbetsLeagesParsing()
+    {
+        $leonbet = new leonbets();
+        $leonbet->getLeages();
+    }
+    //
+    public function actionLeonbetsEventsParsing()
+    {
+        $leonbet = new leonbets();
+        $leonbet->getEvents();
+    }
+    //
+    public function actionMelbetaqpLeagesParsing()
+    {
+        $melbetaqp = new melbetaqp();
+        $melbetaqp->getLeages();
     }
 }
