@@ -7,6 +7,7 @@
  */
 
 namespace app\modules\parser\models;
+use yii;
 
 
 class leonbets extends ParsingAbstractClass
@@ -18,7 +19,7 @@ class leonbets extends ParsingAbstractClass
      */
     public function __construct() {
         parent::__construct(4);
-        $this->connections = 20;
+        $this->connections = count($this->headers);
     }
     /**
      * leonbets destructor
@@ -31,6 +32,9 @@ class leonbets extends ParsingAbstractClass
      * @return array лиги
      */
     public function getLeages() {
+        foreach ($this->headers as $key => $val) {
+            $proxy[] = $key;
+        }
         $leages = [];
         $url = [];
         $url[] = [
@@ -40,24 +44,311 @@ class leonbets extends ParsingAbstractClass
         foreach ($channels as $key => $channel) {
             $html = curl_multi_getcontent($channel);
             if ($html) {
-                //$document = \phpQuery::newDocument(gzdecode($html));
-                echo htmlspecialchars(gzdecode($html));
-                //echo $html;
-                // sportlineMenu
-                /*
-                $menu = pq($document)
-                    ->find('#sportlineMenu')
-                    ->find('li:eq(1)')
-                    ->text();
-                echo $menu;
-                */
-                /*
-                curl_multi_remove_handle($this->mh, $channel);
+                $document = \phpQuery::newDocument(gzdecode($html));
+                //
+                $leages = pq($document)
+                    ->find('ul#sportlineMenu > li:eq(1) ul li');
+                //
+                foreach ($leages as $leage) {
+                    $leageName = pq($leage)
+                        ->text();
+                    $href = pq($leage)
+                        ->find('a')
+                        ->attr('href');
+                    $this->insertLeage(trim($leageName), $this->bukid, $href);
+                }
+                //вот здесь сука утечка памяти уродский гугл
                 \phpQuery::unloadDocuments();
-                curl_close($channel);
-                */
+                gc_collect_cycles();
             }
         }
         return $leages;
+    }
+    public function getMatches() {
+        $leages = Yii::$app->db
+            ->createCommand('
+                SELECT 
+                 id,
+                 parsing_url as href,
+                 `name` as text
+                FROM `leages` 
+                WHERE `bukid` = :bukid
+                AND parsing_url IS NOT NULL', [
+                ':bukid' => $this->bukid
+            ])->queryAll();
+        for ($i=0; $i<count($leages); $i=$i+$this->connections) {
+            $tmpLeages = [];
+            for ($j = 0; $j < $this->connections && $j + $i < count($leages); $j++) {
+                $tmpLeages[] = $leages[$j + $i];
+            }
+            $channels = $this->proceedUrls($tmpLeages);
+            foreach ($channels as $key => $channel) {
+                $html = curl_multi_getcontent($channel);
+                if ($html) {
+                    $document = \phpQuery::newDocument(gzdecode($html));
+                    // rows1
+                    $rows1 = pq($document)
+                        ->find('tr.row1');
+                    foreach ($rows1 as $row1) {
+                        $date = pq($row1)
+                            ->find('td:eq(0) span script')
+                            ->text();
+                        $teams = pq($row1)
+                            ->find('td:eq(1) a')
+                            ->text();
+                        $teams = trim($teams);
+                        $href = pq($row1)
+                            ->find('td:eq(1) a')
+                            ->attr('href');
+                        $mysqlDate = $this->toMysqlDate($date);
+                        $idTeams = $this->insertTeam($this->getTeams($teams));
+                        $this->insertMatch($idTeams, $leages[$key+$i]['id'], $mysqlDate, $this->bukid, $href, $href);
+                    }
+                    // rows2
+                    $rows1 = pq($document)
+                        ->find('tr.row2');
+                    foreach ($rows1 as $row1) {
+                        $date = pq($row1)
+                            ->find('td:eq(0) span script')
+                            ->text();
+                        $teams = pq($row1)
+                            ->find('td:eq(1) a')
+                            ->text();
+                        $teams = trim($teams);
+                        $href = pq($row1)
+                            ->find('td:eq(1) a')
+                            ->attr('href');
+                        $mysqlDate = $this->toMysqlDate($date);
+                        $idTeams = $this->insertTeam($this->getTeams($teams));
+                        $this->insertMatch($idTeams, $leages[$key+$i]['id'], $mysqlDate, $this->bukid, $href, $href);
+                    }
+                }
+            }
+        }
+    }
+
+    public function getEvents()
+    {
+        $matches = Yii::$app->db
+            ->createCommand('
+                SELECT 
+                 id,
+                 parsing_url as href
+                FROM `matches` 
+                WHERE `bukid` = :bukid
+                AND url IS NOT NULL
+                AND `date` > NOW()', [
+                ':bukid' => $this->bukid
+            ])->queryAll();
+        for ($i=0; $i<count($matches); $i=$i+$this->connections) {
+            $tmpMatches = [];
+            for ($j = 0; $j < $this->connections && $j + $i < count($matches); $j++) {
+                $tmpMatches[] = $matches[$j + $i];
+            }
+            $channels = $this->proceedUrls($tmpMatches);
+            foreach ($channels as $key => $channel) {
+                $html = curl_multi_getcontent($channel);
+                if ($html) {
+                    $document = \phpQuery::newDocument(gzdecode($html));
+                    $tables = pq($document)->find('table.morebets.offer-events');
+                    foreach ($tables as $table) {
+                        $eventName = pq($table)
+                            ->find('tr:eq(0)')
+                            ->text();
+                        $eventName = trim($eventName);
+                        switch ($eventName) {
+                            case '1X2':
+                                $od1 = pq($table)
+                                    ->find('tr:eq(1) td:eq(1)')
+                                    ->text();
+                                $od1 = trim($od1);
+                                $odX = pq($table)
+                                    ->find('tr:eq(2) td:eq(1)')
+                                    ->text();
+                                $odX = trim($odX);
+                                $od2 = pq($table)
+                                    ->find('tr:eq(3) td:eq(1)')
+                                    ->text();
+                                $od2 = trim($od2);
+                                $this->insertEvents($matches[$key+$i]['id'], null, 79, $od1, $this->bukid); // event Name
+                                $this->insertEvents($matches[$key+$i]['id'], null, 80, $odX, $this->bukid);
+                                $this->insertEvents($matches[$key+$i]['id'], null, 81, $od2, $this->bukid);
+                                break;
+                            case 'Больше/Меньше 0.5 гола':
+                                $od1 = pq($table)
+                                    ->find('tr:eq(1) td:eq(1)')
+                                    ->text();
+                                $od1 = trim($od1);
+                                $od2 = pq($table)
+                                    ->find('tr:eq(2) td:eq(1)')
+                                    ->text();
+                                $od2 = trim($od2);
+                                $this->insertEvents($matches[$key+$i]['id'], 0.5, 82, $od1, $this->bukid);
+                                $this->insertEvents($matches[$key+$i]['id'], 0.5, 83, $od2, $this->bukid);
+                                break;
+                            case 'Больше/Меньше 1.5 гола':
+                                $od1 = pq($table)
+                                    ->find('tr:eq(1) td:eq(1)')
+                                    ->text();
+                                $od1 = trim($od1);
+                                $od2 = pq($table)
+                                    ->find('tr:eq(2) td:eq(1)')
+                                    ->text();
+                                $od2 = trim($od2);
+                                $this->insertEvents($matches[$key+$i]['id'], 1.5, 82, $od1, $this->bukid);
+                                $this->insertEvents($matches[$key+$i]['id'], 1.5, 83, $od2, $this->bukid);
+                                break;
+                            case 'Больше/Меньше 2.5 гола':
+                                $od1 = pq($table)
+                                    ->find('tr:eq(1) td:eq(1)')
+                                    ->text();
+                                $od1 = trim($od1);
+                                $od2 = pq($table)
+                                    ->find('tr:eq(2) td:eq(1)')
+                                    ->text();
+                                $od2 = trim($od2);
+                                $this->insertEvents($matches[$key+$i]['id'], 2.5, 82, $od1, $this->bukid);
+                                $this->insertEvents($matches[$key+$i]['id'], 2.5, 83, $od2, $this->bukid);
+                                break;
+                            case 'Больше/Меньше 3.5 гола':
+                                $od1 = pq($table)
+                                    ->find('tr:eq(1) td:eq(1)')
+                                    ->text();
+                                $od1 = trim($od1);
+                                $od2 = pq($table)
+                                    ->find('tr:eq(2) td:eq(1)')
+                                    ->text();
+                                $od2 = trim($od2);
+                                $this->insertEvents($matches[$key+$i]['id'], 3.5, 82, $od1, $this->bukid);
+                                $this->insertEvents($matches[$key+$i]['id'], 3.5, 83, $od2, $this->bukid);
+                                break;
+                            case 'Больше/Меньше 4.5 гола':
+                                $od1 = pq($table)
+                                    ->find('tr:eq(1) td:eq(1)')
+                                    ->text();
+                                $od1 = trim($od1);
+                                $od2 = pq($table)
+                                    ->find('tr:eq(2) td:eq(1)')
+                                    ->text();
+                                $od2 = trim($od2);
+                                $this->insertEvents($matches[$key+$i]['id'], 4.5, 82, $od1, $this->bukid);
+                                $this->insertEvents($matches[$key+$i]['id'], 4.5, 83, $od2, $this->bukid);
+                                break;
+                            case 'Больше/Меньше 5.5 гола':
+                                $od1 = pq($table)
+                                    ->find('tr:eq(1) td:eq(1)')
+                                    ->text();
+                                $od1 = trim($od1);
+                                $od2 = pq($table)
+                                    ->find('tr:eq(2) td:eq(1)')
+                                    ->text();
+                                $od2 = trim($od2);
+                                $this->insertEvents($matches[$key+$i]['id'], 5.5, 82, $od1, $this->bukid);
+                                $this->insertEvents($matches[$key+$i]['id'], 5.5, 83, $od2, $this->bukid);
+                                break;
+                        }
+                    }
+                }
+            }
+        }
+    }
+    /*
+     * Получаем куки и записывем их в заголовок по каждому проксику
+     */
+    public function getHeaders($url)
+    {
+        $headers = [];
+        $channels = [];
+        $proxy = $this->getProxy();
+        foreach ($proxy as $key => $val) {
+            $ch = curl_init();
+            curl_setopt($ch, CURLOPT_URL, $url);
+            $user_agent = 'User-Agent: Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/58.0.3029.110 Safari/537.36';
+            $header = [
+                "Accept: text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,*/*;q=0.8",
+                "Accept-Encoding: gzip",
+                "Accept-Language: ru-RU,ru;q=0.8,en-US;q=0.6,en;q=0.4",
+                "Connection: keep-alive"
+            ];
+            curl_setopt($ch, CURLOPT_HTTPHEADER, $header);
+            curl_setopt($ch, CURLOPT_USERAGENT, $user_agent);
+            curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
+            curl_setopt($ch, CURLOPT_PROXY, $proxy[$key]['proxy'].':8080');
+            curl_setopt($ch, CURLOPT_PROXYUSERPWD, $this->proxyauth);
+            //curl_setopt($ch, CURLOPT_NOBODY, true);
+            curl_setopt($ch, CURLOPT_FOLLOWLOCATION, TRUE);
+            curl_setopt($ch, CURLOPT_CONNECTTIMEOUT, 20);
+            curl_setopt($ch, CURLOPT_HEADER, 1);
+            curl_multi_add_handle($this->mh, $ch);
+            $channels[$key] = $ch;
+        }
+        // запускаем дескрипторы
+        $running = null;
+        do {
+            curl_multi_exec($this->mh, $running);
+            curl_multi_select($this->mh);
+        } while ($running);
+        // обрабатываем
+        foreach ($channels as $key => $channel) {
+            $out = curl_multi_getcontent($channel);
+            $info = curl_getinfo($channel);
+            $header = substr($out, 0, $info['header_size']);
+            $body = substr($out, $info['header_size']);
+            if ($info['http_code']==200) {
+                // куки с скрипта
+                $javascript = htmlspecialchars(gzdecode($body));
+                preg_match("/setCookie\(\\'(.{1,})\\', \\'(.{1,})\\'/", $javascript, $matches);
+                /*echo '<pre>';
+                print_r($matches);
+                echo '</pre>';*/
+                if (isset($matches[1])&&isset($matches[2])) {
+                    $headers[$proxy[$key]['proxy']][] = "Cookie: {$matches[1]}={$matches[2]};";
+                }
+                // куки с http запроса
+                preg_match_all('/Set-Cookie: .{1,};/', $header, $matches);
+                foreach ($matches[0] as $match) {
+                    $headers[$proxy[$key]['proxy']][] = str_replace('Set-Cookie:', 'Cookie:', $match);
+                }
+                $headers[$proxy[$key]['proxy']][] = 'User-Agent: Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/58.0.3029.110 Safari/537.36';
+                $headers[$proxy[$key]['proxy']][] = "Accept-Encoding: gzip";
+                $headers[$proxy[$key]['proxy']][] = "Accept: text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,*/*;q=0.8";
+                $headers[$proxy[$key]['proxy']][] = "Accept-Language: ru-RU,ru;q=0.8,en-US;q=0.6,en;q=0.4";
+                $headers[$proxy[$key]['proxy']][] = "Connection: keep-alive";
+            }
+            curl_multi_remove_handle($this->mh, $channel);
+            curl_close($channel);
+        }
+        /*echo '<pre>';
+        print_r($headers);
+        echo '</pre>';*/
+        return $headers;
+    }
+    // to mysqlDate
+    public function toMysqlDate($date)
+    {
+        $patern = '/printShortDate\(([0-9]{1,10})/';
+        preg_match($patern, $date, $matches);
+        return date("Y-m-d H:i:s", $matches[1]);
+    }
+    // getTeams
+    public function getTeams($teams)
+    {
+        if (strpos($teams,' - ') !== false) {
+            $teamsArray = explode(' - ', $teams);
+            for ($i = 0; $i < count($teamsArray); $i++) {
+                $teamsArray[$i] = trim($teamsArray[$i]);
+            }
+        } elseif(strpos($teams,' v ') !== false) {
+            $teamsArray = explode(' v ', $teams);
+            for ($i = 0; $i < count($teamsArray); $i++) {
+                $teamsArray[$i] = trim($teamsArray[$i]);
+            }
+        } elseif(strpos($teams,' vs ') !== true) {
+            $teamsArray = explode(' vs ', $teams);
+            for ($i = 0; $i < count($teamsArray); $i++) {
+                $teamsArray[$i] = trim($teamsArray[$i]);
+            }
+        }
+        return $teamsArray;
     }
 }
