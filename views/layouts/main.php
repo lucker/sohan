@@ -122,6 +122,9 @@
       
 	 <? if(Yii::$app->user->isGuest){ ?>
 	 <ul class="nav navbar-nav navbar-right">
+         <ul class="nav navbar-nav">
+             <li><a href="/site/prematch-vilki">Перматч вилки</a></li>
+         </ul>
 		<li><a href="/site/registration"> <span class="glyphicon glyphicon-user"></span> Регистрация</a></li>
 		<li><a href="/site/login"><span class="glyphicon glyphicon-log-in"></span> Вход</a></li>
      </ul>

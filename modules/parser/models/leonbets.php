@@ -170,9 +170,26 @@ class leonbets extends ParsingAbstractClass
                                     ->find('tr:eq(3) td:eq(1)')
                                     ->text();
                                 $od2 = trim($od2);
-                                $this->insertEvents($matches[$key+$i]['id'], null, 79, $od1, $this->bukid); // event Name
-                                $this->insertEvents($matches[$key+$i]['id'], null, 80, $odX, $this->bukid);
-                                $this->insertEvents($matches[$key+$i]['id'], null, 81, $od2, $this->bukid);
+                                $this->insertEvents($matches[$key+$i]['id'], null, 17, $od1, $this->bukid); // event Name
+                                $this->insertEvents($matches[$key+$i]['id'], null, 18, $odX, $this->bukid);
+                                $this->insertEvents($matches[$key+$i]['id'], null, 19, $od2, $this->bukid);
+                                break;
+                            case 'Двойной исход':
+                                $od1 = pq($table)
+                                    ->find('tr:eq(1) td:eq(1)')
+                                    ->text();
+                                $od1 = trim($od1);
+                                $odX = pq($table)
+                                    ->find('tr:eq(2) td:eq(1)')
+                                    ->text();
+                                $odX = trim($odX);
+                                $od2 = pq($table)
+                                    ->find('tr:eq(3) td:eq(1)')
+                                    ->text();
+                                $od2 = trim($od2);
+                                $this->insertEvents($matches[$key+$i]['id'], null, 20, $od1, $this->bukid); // event Name
+                                $this->insertEvents($matches[$key+$i]['id'], null, 22, $odX, $this->bukid);
+                                $this->insertEvents($matches[$key+$i]['id'], null, 21, $od2, $this->bukid);
                                 break;
                             case 'Больше/Меньше 0.5 гола':
                                 $od1 = pq($table)
@@ -183,8 +200,8 @@ class leonbets extends ParsingAbstractClass
                                     ->find('tr:eq(2) td:eq(1)')
                                     ->text();
                                 $od2 = trim($od2);
-                                $this->insertEvents($matches[$key+$i]['id'], 0.5, 82, $od1, $this->bukid);
-                                $this->insertEvents($matches[$key+$i]['id'], 0.5, 83, $od2, $this->bukid);
+                                $this->insertEvents($matches[$key+$i]['id'], 0.5, 24, $od1, $this->bukid);
+                                $this->insertEvents($matches[$key+$i]['id'], 0.5, 23, $od2, $this->bukid);
                                 break;
                             case 'Больше/Меньше 1.5 гола':
                                 $od1 = pq($table)
@@ -195,8 +212,8 @@ class leonbets extends ParsingAbstractClass
                                     ->find('tr:eq(2) td:eq(1)')
                                     ->text();
                                 $od2 = trim($od2);
-                                $this->insertEvents($matches[$key+$i]['id'], 1.5, 82, $od1, $this->bukid);
-                                $this->insertEvents($matches[$key+$i]['id'], 1.5, 83, $od2, $this->bukid);
+                                $this->insertEvents($matches[$key+$i]['id'], 1.5, 24, $od1, $this->bukid);
+                                $this->insertEvents($matches[$key+$i]['id'], 1.5, 23, $od2, $this->bukid);
                                 break;
                             case 'Больше/Меньше 2.5 гола':
                                 $od1 = pq($table)
@@ -207,8 +224,8 @@ class leonbets extends ParsingAbstractClass
                                     ->find('tr:eq(2) td:eq(1)')
                                     ->text();
                                 $od2 = trim($od2);
-                                $this->insertEvents($matches[$key+$i]['id'], 2.5, 82, $od1, $this->bukid);
-                                $this->insertEvents($matches[$key+$i]['id'], 2.5, 83, $od2, $this->bukid);
+                                $this->insertEvents($matches[$key+$i]['id'], 2.5, 24, $od1, $this->bukid);
+                                $this->insertEvents($matches[$key+$i]['id'], 2.5, 23, $od2, $this->bukid);
                                 break;
                             case 'Больше/Меньше 3.5 гола':
                                 $od1 = pq($table)
@@ -219,8 +236,8 @@ class leonbets extends ParsingAbstractClass
                                     ->find('tr:eq(2) td:eq(1)')
                                     ->text();
                                 $od2 = trim($od2);
-                                $this->insertEvents($matches[$key+$i]['id'], 3.5, 82, $od1, $this->bukid);
-                                $this->insertEvents($matches[$key+$i]['id'], 3.5, 83, $od2, $this->bukid);
+                                $this->insertEvents($matches[$key+$i]['id'], 3.5, 24, $od1, $this->bukid);
+                                $this->insertEvents($matches[$key+$i]['id'], 3.5, 23, $od2, $this->bukid);
                                 break;
                             case 'Больше/Меньше 4.5 гола':
                                 $od1 = pq($table)
@@ -231,8 +248,8 @@ class leonbets extends ParsingAbstractClass
                                     ->find('tr:eq(2) td:eq(1)')
                                     ->text();
                                 $od2 = trim($od2);
-                                $this->insertEvents($matches[$key+$i]['id'], 4.5, 82, $od1, $this->bukid);
-                                $this->insertEvents($matches[$key+$i]['id'], 4.5, 83, $od2, $this->bukid);
+                                $this->insertEvents($matches[$key+$i]['id'], 4.5, 24, $od1, $this->bukid);
+                                $this->insertEvents($matches[$key+$i]['id'], 4.5, 23, $od2, $this->bukid);
                                 break;
                             case 'Больше/Меньше 5.5 гола':
                                 $od1 = pq($table)
@@ -243,12 +260,18 @@ class leonbets extends ParsingAbstractClass
                                     ->find('tr:eq(2) td:eq(1)')
                                     ->text();
                                 $od2 = trim($od2);
-                                $this->insertEvents($matches[$key+$i]['id'], 5.5, 82, $od1, $this->bukid);
-                                $this->insertEvents($matches[$key+$i]['id'], 5.5, 83, $od2, $this->bukid);
+                                $this->insertEvents($matches[$key+$i]['id'], 5.5, 24, $od1, $this->bukid);
+                                $this->insertEvents($matches[$key+$i]['id'], 5.5, 23, $od2, $this->bukid);
                                 break;
                         }
                     }
+                    \phpQuery::unloadDocuments();
+                    gc_collect_cycles();
                 }
+                curl_multi_remove_handle($this->mh, $channel);
+                curl_close($channel);
+                // ждем 0.1 секунд
+                usleep(100000);
             }
         }
     }

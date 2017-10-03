@@ -24,6 +24,7 @@ class sportingbetru extends ParsingAbstractClass
     }
     public function getEvents()
     {
+        //$start = microtime(true);
         $matches = Yii::$app->db
             ->createCommand('
                 SELECT 
@@ -35,7 +36,8 @@ class sportingbetru extends ParsingAbstractClass
                 AND `date` > NOW()', [
                 ':bukid' => $this->bukid
             ])->queryAll();
-        $u = 0;
+        //$u = 0;
+        //echo 'pid = '.getmypid(); echo '<br>';
         for ($i=0; $i<count($matches); $i=$i+$this->connections) {
             $tmpMatches = [];
             for ($j=0; $j<$this->connections && $j+$i<count($matches); $j++) {
@@ -44,63 +46,71 @@ class sportingbetru extends ParsingAbstractClass
             $channels = $this->proceedUrls($tmpMatches);
             foreach ($channels as $key => $channel) {
                 $html = curl_multi_getcontent($channel);
-                if ($html) {
-                    $u++;
-                    echo 'урл номер '.$u; echo '<br>';
-                    ob_flush();
-                    flush();
+                $info = curl_getinfo($channel);
+                if ($html && $info['http_code']==200) {
                     $document = \phpQuery::newDocument(gzdecode($html));
                     //wins
                     $oddsArray = [];
                     $events = pq($document)->find('li.m_item');
-                    foreach($events as $event) {
+                    foreach ($events as $event) {
                         $headText = pq($event)
                             ->find('span.headerSub.groupHeader')
                             ->text();
-                        $uls = pq($event)->find('ul.teamTieCoupon');
-                        foreach ($uls as $ul) {
-                            // коэфициенты
-                            $priceArray = [];
-                            $odds = pq($ul)
-                                ->find('div.couponEvents')
-                                ->find('div.odds');
-                            foreach($odds as $odd) {
-                                $price = pq($odd)
-                                    ->find('#isOffered')
-                                    ->find('span.priceText.EU')
-                                    ->text();
-                                $priceArray[] = $price;
+                        if (trim($headText)=='Коэффициенты на матч') {
+                            $uls = pq($event)->find('ul.teamTieCoupon');
+                            foreach ($uls as $ul) {
+                                // коэфициенты
+                                $priceArray = [];
+                                $odds = pq($ul)
+                                    ->find('div.couponEvents')
+                                    ->find('div.odds');
+                                $oddIndex = 0;
+                                foreach ($odds as $odd) {
+                                    $price = pq($odd)
+                                        ->find('#isOffered')
+                                        ->find('span.priceText.EU')
+                                        ->text();
+                                    $price = trim($price);
+                                    switch ($oddIndex) {
+                                        case 0:
+                                            $this->insertEvents($matches[$key + $i]['id'], null, 4, $price, 3);
+                                            break;
+                                        case 1:
+                                            $this->insertEvents($matches[$key + $i]['id'], null, 5, $price, 3);
+                                            break;
+                                        case 2:
+                                            $this->insertEvents($matches[$key + $i]['id'], null, 6, $price, 3);
+                                            break;
+                                    }
+                                    $oddIndex++;
+                                }
                             }
-                            // заголовки
-                            $header = [];
-                            $results = pq($ul)
-                                ->find('.m_header')
-                                ->find('.results')
-                                ->find('.odds');
-                            foreach ($results as $result) {
-                                $header[] = trim(pq($result)->text());
-                            }
-                            $oddsArray[] = [
-                                'groupName' => trim($headText),
-                                'eventNames' => $header,
-                                'odds' => $priceArray
-                            ];
                         }
                     }
-                    for($k=0; $k<count($oddsArray); $k++) {
-                        $groupId = $this->insertEventGroupName($oddsArray[$k]['groupName'], 3);
-                        for($m=0; $m<count($oddsArray[$k]['eventNames']); $m++) {
-                            if (!empty($oddsArray[$k]['odds'][$m])) {
-                                $eventName = $this->insertEventName($oddsArray[$k]['eventNames'][$m], 3, $groupId);
-                                $this->insertEvents($matches[$key + $i]['id'], null, $eventName, $oddsArray[$k]['odds'][$m], 3);
+                    // победа или поражение
+                    foreach ($events as $event) {
+                        $headText = pq($event)
+                            ->find('span.headerSub.groupHeader')
+                            ->text();
+                        $headText = trim($headText);
+                        if (trim($headText)=='Двойной шанс') {
+                            $m_events = pq($event)->find('ul.coupon.simple.Team_Competition div.m_event');
+                            foreach ($m_events as $m_event) {
+                                $eventName = pq($m_event)
+                                    ->find('div.description')
+                                    ->text();
+                                $eventName = trim($eventName);
+                                $odd = pq($m_event)
+                                    ->find('div#isOffered span.priceText.wide.EU')
+                                    ->text();
+                                $odd = trim($odd);
+                                $eventName = $this->insertEventName($eventName, 3,null);
+                                $this->insertEvents($matches[$key + $i]['id'], null, $eventName, $odd, 3);
                             }
                         }
                     }
                     //totals
-                    $totalsArray = [];
-                    $items = pq($document)
-                        ->find('li.m_item');
-                    foreach ($items as $item) {
+                    foreach ($events as $item) {
                         $headName = pq($item)
                             ->find('.headerSub.groupHeader')
                             ->text();
@@ -121,17 +131,9 @@ class sportingbetru extends ParsingAbstractClass
                                     ->text();
                                 if (!empty($price) && !empty($handicap)) {
                                     if ($k % 2 == 0) {
-                                        $totalsArray[] = [
-                                            'groupName' => trim($headName),
-                                            'odds' => $price,
-                                            'handicap' => $handicap
-                                        ];
+                                        $this->insertEvents($matches[$key + $i]['id'], trim($handicap), 7, trim($price), 3);
                                     } else {
-                                        $totalsArray[] = [
-                                            'groupName' => trim($headName),
-                                            'odds' => $price,
-                                            'handicap' => $handicap
-                                        ];
+                                        $this->insertEvents($matches[$key + $i]['id'], trim($handicap), 8, trim($price), 3);
                                     }
                                     $k++;
                                 }
@@ -139,28 +141,13 @@ class sportingbetru extends ParsingAbstractClass
                             }
                         }
                     }
-                    // запись значений
-                    for($k=0; $k<count($totalsArray); $k++) {
-                        $groupId = $this->insertEventGroupName($totalsArray[$k]['groupName'], 3);
-                        if (!empty($totalsArray[$k]['odds'])) {
-                            if ($k % 2 == 0) {
-                                $eventName = $this->insertEventName('Тотал больше', 3, $groupId);
-                                $this->insertEvents($matches[$key + $i]['id'], $totalsArray[$k]['handicap'], $eventName, $totalsArray[$k]['odds'], 3);
-                            } else {
-                                $eventName = $this->insertEventName('Тотал меньше', 3, $groupId);
-                                $this->insertEvents($matches[$key + $i]['id'], $totalsArray[$k]['handicap'], $eventName, $totalsArray[$k]['odds'], 3);
-                            }
-                        }
-                    }
                     \phpQuery::unloadDocuments();
                     gc_collect_cycles();
-                } else {
-                    /*echo $u; echo '<br>';
-                    ob_flush();
-                    flush();*/
                 }
                 curl_multi_remove_handle($this->mh, $channel);
-                //curl_close($channel);
+                curl_close($channel);
+                // ждем 0.1 секунд
+                usleep(100000);
             }
         }
     }

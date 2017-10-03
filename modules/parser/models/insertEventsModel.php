@@ -171,7 +171,7 @@ class insertEventsModel
     //insert events
     public function insertEvents($matchId, $parametr, $nameId, $odd, $bukid)
     {
-        if($parametr) {
+        if ($parametr) {
             $eventId = Yii::$app->db
                 ->createCommand('
                     SELECT id FROM `events` 

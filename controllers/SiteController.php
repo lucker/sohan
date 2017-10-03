@@ -130,6 +130,11 @@ class SiteController extends Controller
 	//
     public function actionPrematchVilki()
     {
+        $this->view->title = "Прематч вилки, сканер прематч вилок";
+        Yii::$app->view->registerMetaTag([
+            'name' => 'description',
+            'content' => 'Сервис по онлайн поиску букмекерских вилок - sohan. Обновление каждые 5 минуты!'
+        ]);
         return $this->render('vilki');
     }
 

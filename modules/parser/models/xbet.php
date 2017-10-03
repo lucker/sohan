@@ -32,17 +32,15 @@ class xbet extends ParsingAbstractClass
     }
     public function getEvents()
     {
-        $matches = Yii::$app->db
-            ->createCommand('
-                SELECT 
-                 id,
-                 parsing_url as href
-                FROM `matches` 
-                WHERE `bukid` = :bukid
-                AND url IS NOT NULL
-                AND `date` > NOW()', [
-                ':bukid' => $this->bukid
-            ])->queryAll();
+        $matches = $this->getData("
+            SELECT 
+                id,
+                parsing_url as href
+            FROM `matches` 
+            WHERE `bukid` = {$this->bukid}
+            AND url IS NOT NULL
+            AND `date` > NOW()
+        ");
         for ($i=0; $i<count($matches); $i=$i+$this->connections) {
             $tmpMatches = [];
             for ($j=0; $j<$this->connections && $j+$i<count($matches); $j++) {
@@ -59,20 +57,41 @@ class xbet extends ParsingAbstractClass
                             if ($json->Value->E[$j]->T > 10) {
                                 break;
                             }
-                            if ($json->Value->E[$j]->T == 1 || $json->Value->E[$j]->T == 2 || $json->Value->E[$j]->T == 3 || $json->Value->E[$j]->T == 9 || $json->Value->E[$j]->T == 10) {
-                                if (isset($json->Value->E[$j]->P)) {
-                                    $this->insertEvents($matches[$key+$i]['id'], $json->Value->E[$j]->P, $this->insertEventName($json->Value->E[$j]->T, 1, null)
-                                        , $json->Value->E[$j]->C, 1);
-                                } else {
-                                    $this->insertEvents($matches[$key+$i]['id'], null, $this->insertEventName($json->Value->E[$j]->T, 1, null)
-                                        , $json->Value->E[$j]->C, 1);
-                                }
+                            switch ($json->Value->E[$j]->T) {
+                                case 1:
+                                    $this->insertEvents($matches[$key+$i]['id'], null, 9, $json->Value->E[$j]->C, 1);
+                                    break;
+                                case 2:
+                                    $this->insertEvents($matches[$key+$i]['id'], null, 10, $json->Value->E[$j]->C, 1);
+                                    break;
+                                case 3:
+                                    $this->insertEvents($matches[$key+$i]['id'], null, 11, $json->Value->E[$j]->C, 1);
+                                    break;
+
+                                case 4:
+                                    $this->insertEvents($matches[$key+$i]['id'], null, 12, $json->Value->E[$j]->C, 1);
+                                    break;
+                                case 5:
+                                    $this->insertEvents($matches[$key+$i]['id'], null, 14, $json->Value->E[$j]->C, 1);
+                                    break;
+                                case 6:
+                                    $this->insertEvents($matches[$key+$i]['id'], null, 13, $json->Value->E[$j]->C, 1);
+                                    break;
+
+                                case 9:
+                                    $this->insertEvents($matches[$key+$i]['id'], $json->Value->E[$j]->P, 15, $json->Value->E[$j]->C, 1);
+                                    break;
+                                case 10:
+                                    $this->insertEvents($matches[$key+$i]['id'], $json->Value->E[$j]->P, 16, $json->Value->E[$j]->C, 1);
+                                    break;
                             }
                         }
                     }
                 }
                 curl_multi_remove_handle($this->mh, $channel);
                 curl_close($channel);
+                // ждем 0.1 секунд
+                usleep(100000);
             }
         }
     }

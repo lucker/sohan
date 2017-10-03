@@ -1,12 +1,11 @@
 <?php
-use app\modules\parser\widgets\WinsWidget;
-use app\modules\parser\widgets\TotalsWidget;
+use app\modules\parser\widgets\VilkiWidget;
 ?>
 <div class="container">
-<h1 style="text-align:center">Сканер вилок</h1>
+<h1 style="text-align:center">Прематч вилки</h1>
+    <p class="lead">Прематч вилки это вилки на события, которые начнуться в будущем. Ниже список всех предматч вилок</p>
 <!-- вилка поражение, победа, ничья -->
-<?= WinsWidget::widget() ?>
-<?= TotalsWidget::widget() ?>
+<?= VilkiWidget::widget() ?>
 <!-- -->
     <div class="col-md-12">
         <span>
