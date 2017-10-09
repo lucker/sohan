@@ -29,6 +29,6 @@ class TarifiController extends Controller
         print_r($_POST);
         echo '</pre>';
         echo "Оплата успешно прошла";*/
-        echo 'thanks';
+        echo 'thanks error';
     }
 }
