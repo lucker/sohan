@@ -7,13 +7,8 @@
   <div class="form-group">
     <label for="email">Ваш почтовый адрес:</label>
 	  <input type="email" class="form-control" id="email" name="RegistrationForm[email]" value="  <?= $model->email ?>" required>
+      <? if($error!=null) { ?> <p class="help-block" style="color:red;"><?= $error ?></p> <? } ?>
   </div>
-  
-  <div class="form-group">
-    <label for="login">Логин:</label>
-	  <input type="text" class="form-control" id="login" name="RegistrationForm[login]" value="  <?= $model->login ?>" required>
-  </div>
-  
   <div class="form-group">
     <label for="pwd">Пароль:</label>
     <input type="password" class="form-control" id="pwd" name="RegistrationForm[password]" value="<?= $model->password ?>" required>

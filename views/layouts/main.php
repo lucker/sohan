@@ -117,9 +117,6 @@
     <div class="navbar-header">
 		<a class="navbar-brand" href="/">sohan.xyz</a>
     </div>
-
-     
-      
 	 <? if(Yii::$app->user->isGuest){ ?>
 	 <ul class="nav navbar-nav navbar-right">
          <ul class="nav navbar-nav">
@@ -130,12 +127,15 @@
      </ul>
 	 <? }else{ ?>
 	 <ul class="nav navbar-nav navbar-right">
+         <ul class="nav navbar-nav">
+             <li><a href="/site/prematch-vilki">Перматч вилки</a></li>
+         </ul>
 		<li>
-           <a data-toggle="dropdown" href="#"> <span class="glyphicon glyphicon-chevron-down"></span> <?= $this->params['user']->name ?></a>
+           <a data-toggle="dropdown" href="#"> <span class="glyphicon glyphicon-chevron-down"></span> <?= Yii::$app->user->identity->email ?> </a>
            <ul class="dropdown-menu" role="menu" aria-labelledby="dLabel">
-            <li><a href="/prognoz/index"> Сделать ставку </a></li>
-	        <li><a href="/prognoz/p"> Добавить прогноз </a></li>
-		    <li><a href="/money/index"> Пополнить счет </a></li>
+            <li><a href="/tarifi/index"> Выбрать тарифный план </a></li>
+	        <!-- <li><a href="/prognoz/p"> Добавить прогноз </a></li>
+		    <li><a href="/money/index"> Пополнить счет </a></li> -->
            </ul>
 		</li>
 		 <li><a href="/site/logout"><span class="glyphicon glyphicon-log-out"></span> Выход</a></li>

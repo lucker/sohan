@@ -41,7 +41,13 @@ class users extends ActiveRecord implements IdentityInterface
     {
         return $this->id;
     }
-
+    /**
+     * @return int|string current email
+     */
+    public function getEmail()
+    {
+        return $this->email;
+    }
     /**
      * @return string current user auth key
      */
