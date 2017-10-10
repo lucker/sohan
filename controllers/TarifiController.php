@@ -27,7 +27,8 @@ class TarifiController extends Controller
     }
     public function actionThanks()
     {
-        return $this->render('thanks');
+        echo 'error';
+        //return $this->render('thanks');
     }
 
     /*public function behaviors()
