@@ -5,11 +5,10 @@
         <p class="lead" style="color: white; font-family: "Lato", "Helvetica Neue", Arial;">Новый футбольный сканер вилок, у нас есть букмекерские вилки, которых <u>НЕТУ</u> у других сканеров вилок.
         Коэффициенты только с проверенных букмекерских контор, не теряй время, пользуйся лучшими сканерами.</p>
     </div>
-    <button type="button" class="btn btn-primary btn-lg btn-block" style="margin-top: 240px;">
-        Зарегистрируйся и получи день бесплатного пользования
+    <button onclick = "window.location='http://sohan.xyz/site/registration'" type = "button" class = "btn btn-primary btn-lg btn-block" style = "margin-top: 240px;">
+        Зарегистрируйся
     </button>
 </div>
-
 
 <div class="container">
 

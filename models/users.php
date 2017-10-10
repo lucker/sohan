@@ -22,7 +22,7 @@ class users extends ActiveRecord implements IdentityInterface
     {
         return static::findOne($id);
     }
-    
+
     /**
      * Finds an identity by the given token.
      *
