@@ -14,7 +14,7 @@ class RegistrationForm extends Model
     public function rules()
     {
         return [
-            [['email', 'password','login'], 'required'],
+            [['email', 'password'], 'required'],
             ['email', 'email'],
         ];
     }
