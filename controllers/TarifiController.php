@@ -3,6 +3,7 @@ namespace app\controllers;
 
 use Yii;
 use yii\web\Controller;
+use yii\filters\AccessControl;
 class TarifiController extends Controller
 {
     public function actionIndex()
@@ -18,17 +19,30 @@ class TarifiController extends Controller
     {
         if (isset($_POST)) {
             $connection = Yii::$app->db;
-            $sql = "INSERT INTO orders(interkassa_id, amount, confirmed, ik_cur) VALUES ('{$_POST['ik_pm_no']}', {$_POST['ik_am']}, 1, ik_cur)";
+            $userId = str_replace('ID_', '', $_POST['ik_pm_no']);
+            $sql = "INSERT INTO orders(user_id, amount, confirmed, ik_cur) VALUES ('{$userId}', {$_POST['ik_am']}, 1, ik_cur)";
             $command = $connection->createCommand($sql);
             $command->execute();
         }
     }
     public function actionThanks()
     {
-        /*echo '<pre>';
-        print_r($_POST);
-        echo '</pre>';
-        echo "Оплата успешно прошла";*/
-        echo 'thanks';
+        return $this->render('thanks');
     }
+
+    /*public function behaviors()
+    {
+        return [
+            'access' => [
+                'class' => AccessControl::className(),
+                'rules' => [
+                    [
+                        'allow' => true,
+                        'actions' => ['oplata'],
+                        'roles' => ['@'],
+                    ]
+                ],
+            ],
+        ];
+    }*/
 }

@@ -90,37 +90,6 @@ class SiteController extends Controller
 		Yii::$app->user->logout();
 		return $this->redirect('/site/index',302);
 	}
-	// user_profile+functionality
-	public function actionProfile()
-	{
-		$match= matches::find()->orderBy('id')->asArray()->all();
-		return $this->render('profile');
-	}
-	//about 
-	public function actionBet()
-	{
-		//мета теги
-		Yii::$app->view->params['title'] = 'Онлайн ставки на виртуальные деньги - sohan.xyz';
-		Yii::$app->view->params['description'] = 'Онлайн ставки на виртуальные деньги - sohan.xyz';
-		//
-	   $user = users::find()->where(['id'=>Yii::$app->user->id])->one();
-	   Yii::$app->view->params['page'] = 2;
-	   Yii::$app->view->params['user'] = $user;
-	   return $this->render('about');
-	}
-	//test
-	public function actionTest()
-	{
-		return $this->render('index');
-	}
-	//конкурс прогнозистов
-	public function actionKonkurs()
-	{
-		//мета теги
-		Yii::$app->view->params['title'] = 'Конкурс прогнозов с денежными призами - sohan.xyz';
-		Yii::$app->view->params['description'] = 'Конкурс прогнозов с денежными призами - sohan.xyz';
-		return $this->render('konkurs');
-	}
 	//
     public function actionPrematchVilki()
     {

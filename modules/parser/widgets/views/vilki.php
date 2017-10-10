@@ -12,16 +12,21 @@
                 <td>
                     <div class="col-md-12">
                         <div class="row">
-                            <div class="col-md-12"><b><?= $data[$i]['data'][$j]['leage'] ?></b></div>
+                            <div class="col-md-12">
+                                <?= Yii::$app->user->time ?>
+                                <? // if (Yii::$app->user->time) { ?>
+                                <b><?= $data[$i]['data'][$j]['leage'] ?></b>
+                                <? // } ?>
+                            </div>
                             <div class="col-md-12">
                                 <a rel="nofollow" target="_blank" href = "<?= $data[$i]['data'][$j]['url'] ?>">
                                     <?= $data[$i]['data'][$j]['team1'] ?> - <?= $data[$i]['data'][$j]['team2'] ?>
                                 </a>
                             </div>
                             <div class="col-md-12">
-                                    <span style="color:green;font-size: 15px;">
-                                        Коэффициенты актуальные на <?= date("d-m-Y H:i:s",strtotime($data[$i]['data'][$j]['update_date'])) ?>
-                                    </span>
+                                <span style="color:green;font-size: 15px;">
+                                    Коэффициенты актуальные на <?= date("d-m-Y H:i:s",strtotime($data[$i]['data'][$j]['update_date'])) ?>
+                                </span>
                             </div>
                         </div>
                     </div>
