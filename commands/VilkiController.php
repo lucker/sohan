@@ -28,6 +28,5 @@ class VilkiController extends Controller
             $vilki->checkOldVilki();
             sleep(20);
         }
-        $vilki = new vilki();
     }
 }
