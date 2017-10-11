@@ -275,8 +275,8 @@ class leonbets extends ParsingAbstractClass
                 }
                 curl_multi_remove_handle($this->mh, $channel);
                 curl_close($channel);
-                // ждем 0.5 секунд
-                usleep(1000000);
+                // ждем 0.1 секунд
+                usleep(100000);
             }
         }
     }
