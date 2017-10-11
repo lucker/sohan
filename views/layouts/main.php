@@ -14,24 +14,23 @@
  <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/jquery-cookie/1.4.1/jquery.cookie.min.js"></script>
  <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/jquery-cookie/1.4.1/jquery.cookie.js"></script>
     <style type="text/css">
-        /*.firstBlock{
-            position: relative;
-            z-index: 1;
-            height: 350px;
+        .container {
+            padding-bottom: 100px;
         }
-        .firstBlock .bg {
+        footer {
             position: absolute;
-            z-index: -1;
-            top: 0;
             bottom: 0;
-            left: 0;
-            right: 0;
-            background: url('http://99px.ru/sstorage/53/2013/03/tmb_64731_5258.jpg');
-            opacity: .7;
             width: 100%;
-            height: 320px;
-            background-size: cover;
-        }*/
+            /*height: 60px;
+            line-height: 60px;
+            background-color: #f5f5f5;*/
+        }
+        .container2 {
+            width: auto;
+            max-width: 680px;
+            padding: 0 15px;
+        }
+
         .firstBlock {
             background: url('http://oldtimewallpapers.com/wallpapers/201212/1355307553_medium.jpg');
             background-size: cover;
@@ -71,35 +70,7 @@
         .border li:nth-child(5):hover {border-right: 10px solid #493224;}
     </style>
 </head>
-<body>
-<!-- Yandex.Metrika counter -->
-<script type="text/javascript">
-    (function (d, w, c) {
-        (w[c] = w[c] || []).push(function() {
-            try {
-                w.yaCounter41696884 = new Ya.Metrika({
-                    id:41696884,
-                    clickmap:true,
-                    trackLinks:true,
-                    accurateTrackBounce:true
-                });
-            } catch(e) { }
-        });
-
-        var n = d.getElementsByTagName("script")[0],
-            s = d.createElement("script"),
-            f = function () { n.parentNode.insertBefore(s, n); };
-        s.type = "text/javascript";
-        s.async = true;
-        s.src = "https://mc.yandex.ru/metrika/watch.js";
-
-        if (w.opera == "[object Opera]") {
-            d.addEventListener("DOMContentLoaded", f, false);
-        } else { f(); }
-    })(document, window, "yandex_metrika_callbacks");
-</script>
-<noscript><div><img src="https://mc.yandex.ru/watch/41696884" style="position:absolute; left:-9999px;" alt="" /></div></noscript>
-<!-- /Yandex.Metrika counter -->
+<body style="min-height:100%; position: relative;">
 <script>
   (function(i,s,o,g,r,a,m){i['GoogleAnalyticsObject']=r;i[r]=i[r]||function(){
   (i[r].q=i[r].q||[]).push(arguments)},i[r].l=1*new Date();a=s.createElement(o),
@@ -148,6 +119,24 @@
 </nav>
 <!-- menu -->
   <?= $content ?>
+<footer class="footer">
+<div class="col-md-12" style="background: radial-gradient(#36414E, #253241);text-align: center; color: white;">
+    <div style="height: 25px"></div>
+    <div class="col-md-12">
+        <div><a style="color:white;" href="http://sohan.xyz/site/terms">Пользовательское соглашение</a></div>
+    </div>
+    <div class="col-md-12">
+        <span tyle="color:white;">Связаться с нами: </span><a class="mail" style="color:white;" href="mailto:igorsohan20@gmail.com"><span class="glyphicon glyphicon-envelope"></span></a>
+    </div>
+    <div class="col-md-12">2016-2017 (с) sohan.xyz All rights reserved</div>
+    <div style="height: 25px"></div>
+</div>
+</footer>
+<!-- <footer class="footer">
+    <div class="container2">
+        <span class="text-muted">Place sticky footer content here.</span>
+    </div>
+</footer> -->
 <!-- Top100 (Kraken) Counter -->
 <script>
     (function (w, d, c) {

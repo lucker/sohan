@@ -16,10 +16,6 @@ class SiteController extends Controller
 	public $enableCsrfValidation = false;
 	public function beforeAction($action)
     {
-        /*echo '<pre>';
-        print_r(Yii::$app->user->identity->email);
-        echo '</pre>';
-        exit;*/
         return parent::beforeAction($action);
     }
     public function actionIndex()
@@ -29,9 +25,6 @@ class SiteController extends Controller
             'name' => 'description',
             'content' => 'Сервис по онлайн поиску букмекерских вилок - sohan. Обновление каждые 5 минуты!'
         ]);
-        // Yii::$app->user->can('prematch_vilki')
-
-        //
         return $this->render('index');
     }
 	// login
@@ -62,27 +55,31 @@ class SiteController extends Controller
 	{
         $error = null;
 		$model = new RegistrationForm();
-		if ($model->load(Yii::$app->request->post()) && $model->validate()) {
-            $isemail = users::find()->where(['email' => $model->email])->one();
-		    if ($isemail) {
-			    return $this->render('registration', ['model' => $model, 'error' => 'Пользователь с такой почтой уже существует']);
-	        } else {
-		        $user = new users();
-	            $user->email = $model->email;
-	            $user->password = $model->password;
-	            $user->save();
-			    $auth = users::find()
-                    ->where([
-                        'password' => $model->password,
-                        'email' => $model->email
-                    ])
-                    ->one();
-			    Yii::$app->user->login($auth);
-			    return $this->redirect('/site/index',302);
-	        }
+		if ($model->load(Yii::$app->request->post())) {
+            if ($model->validate()) {
+                $isemail = users::find()->where(['email' => $model->email])->one();
+                if ($isemail) {
+                    return $this->render('registration', ['model' => $model, 'error' => 'Пользователь с такой почтой уже существует']);
+                } else {
+                    $user = new users();
+                    $user->email = $model->email;
+                    $user->password = $model->password;
+                    $user->save();
+                    $auth = users::find()
+                        ->where([
+                            'password' => $model->password,
+                            'email' => $model->email
+                        ])
+                        ->one();
+                    Yii::$app->user->login($auth);
+                    return $this->redirect('/site/index', 302);
+                }
+            } else {
+                return $this->render('registration', ['model' => $model, 'error' => 'Не прошло валидацию']);
+            }
         } else {
-		    return $this->render('registration', ['model' => $model, 'error' => 'Не прошло валидацию']);
-		}
+            return $this->render('registration');
+        }
 	}
 	//logout
 	public function actionLogout()
@@ -100,7 +97,16 @@ class SiteController extends Controller
         ]);
         return $this->render('vilki');
     }
-
+    //terms
+    public function actionTerms()
+    {
+        return $this->render('terms');
+    }
+    // contacts
+    public function actionContacts()
+    {
+        return $this->render('contacts');
+    }
     public function actions()
     {
         return [

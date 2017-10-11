@@ -150,6 +150,10 @@ class ParsingAbstractClass extends insertEvents
         foreach ($channels as $key => $channel) {
             $out = curl_multi_getcontent($channel);
             $info = curl_getinfo($channel);
+            /*echo $out;
+            echo '<pre>';
+            print_r($info);
+            echo '</pre>';*/
             if ($info['http_code']==200) {
                 preg_match_all('/Set-Cookie: .{1,};/', $out, $matches);
                 foreach ($matches[0] as $match) {

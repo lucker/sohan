@@ -62,7 +62,7 @@ class melbet extends ParsingAbstractClass
                 AND parsing_url IS NOT NULL', [
                 ':bukid' => $this->bukid
             ])->queryAll();
-        $u = 0;
+        //$u = 0;
         for ($i=0; $i<count($leages); $i=$i+$this->connections) {
             $tmpLeages = [];
             for ($j = 0; $j < $this->connections && $j + $i < count($leages); $j++) {
@@ -71,11 +71,11 @@ class melbet extends ParsingAbstractClass
             $channels = $this->proceedUrls($tmpLeages);
             foreach ($channels as $key => $channel) {
                 $html = curl_multi_getcontent($channel);
-                echo 'befor = '.$u; echo '<br>';
+                //echo 'befor = '.$u; echo '<br>';
                 if ($html) {
-                    echo 'after = '.$u; echo '<br>';
+                    /*echo 'after = '.$u; echo '<br>';
                     ob_flush();
-                    flush();
+                    flush();*/
                     $json = json_decode(gzdecode($html));
                     foreach($json->Value as $val) {
                         $idTeams = $this->insertTeam([$val->Opp1, $val->Opp2]);
@@ -85,6 +85,7 @@ class melbet extends ParsingAbstractClass
                             $this->bukid, $melbetUrl, $parsingUrl);
                     }
                 }
+                //$u++;
             }
         }
     }

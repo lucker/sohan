@@ -54,8 +54,3 @@
         </ul>
     </div>
 </div>
-<div class="col-md-12" style="background: radial-gradient(#36414E, #253241);text-align: center; color: white;">
-    <div style="height: 25px"></div>
-    2016-2017 (с) sohan.xyz All rights reserved
-    <div style="height: 25px"></div>
-</div>
