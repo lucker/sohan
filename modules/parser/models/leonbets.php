@@ -9,7 +9,6 @@
 namespace app\modules\parser\models;
 use yii;
 
-
 class leonbets extends ParsingAbstractClass
 {
     public $url;
@@ -61,6 +60,8 @@ class leonbets extends ParsingAbstractClass
                 \phpQuery::unloadDocuments();
                 gc_collect_cycles();
             }
+            curl_multi_remove_handle($this->mh, $channel);
+            curl_close($channel);
         }
         return $leages;
     }
@@ -122,7 +123,11 @@ class leonbets extends ParsingAbstractClass
                         $idTeams = $this->insertTeam($this->getTeams($teams));
                         $this->insertMatch($idTeams, $leages[$key+$i]['id'], $mysqlDate, $this->bukid, $href, $href);
                     }
+                    \phpQuery::unloadDocuments();
+                    gc_collect_cycles();
                 }
+                curl_multi_remove_handle($this->mh, $channel);
+                curl_close($channel);
             }
         }
     }
@@ -270,8 +275,8 @@ class leonbets extends ParsingAbstractClass
                 }
                 curl_multi_remove_handle($this->mh, $channel);
                 curl_close($channel);
-                // ждем 0.1 секунд
-                usleep(100000);
+                // ждем 0.5 секунд
+                usleep(1000000);
             }
         }
     }
