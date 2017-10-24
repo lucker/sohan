@@ -1,6 +1,12 @@
 <?php
-define('YII_ENV', 'test');
 defined('YII_DEBUG') or define('YII_DEBUG', true);
+define('YII_ENV', 'test');
+require('/var/www/html/vendor/autoload.php');
+require('/var/www/html/vendor/yiisoft/yii2/Yii.php');
 
-require_once(__DIR__ . '/../vendor/yiisoft/yii2/Yii.php');
-require __DIR__ .'/../vendor/autoload.php';
+$config = require('/var/www/html/config/console.php');
+
+//$application = new yii\console\Application($config);
+//$exitCode = $application->run();
+//exit($exitCode);
+?>

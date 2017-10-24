@@ -94,16 +94,16 @@ class melbet extends ParsingAbstractClass
     {
         $matches = Yii::$app->db
             ->createCommand('
-                SELECT 
-                 id,
-                 parsing_url as href
-                FROM `matches` 
-                WHERE `bukid` = :bukid
-                AND url IS NOT NULL
-                AND `date` > NOW()', [
+            SELECT 
+                id,
+                parsing_url as href
+            FROM `matches` 
+            WHERE `bukid` = :bukid
+            AND url IS NOT NULL
+            AND `date` > NOW()', [
                 ':bukid' => $this->bukid
             ])->queryAll();
-        for ($i=0; $i<count($matches); $i=$i+$this->connections) {
+        for ($i = 0; $i < count($matches); $i = $i + $this->connections) {
             $tmpMatches = [];
             for ($j = 0; $j < $this->connections && $j + $i < count($matches); $j++) {
                 $tmpMatches[] = $matches[$j + $i];
@@ -112,7 +112,8 @@ class melbet extends ParsingAbstractClass
             $channels = $this->proceedUrls($tmpMatches);
             foreach ($channels as $key => $channel) {
                 $html = curl_multi_getcontent($channel);
-                if (!empty($html)) {
+                $info = curl_getinfo($channel);
+                if ($html && $info['http_code'] == 200) {
                     $json = json_decode(gzdecode($html));
                     if (isset($json->Value->Events)) {
                         foreach ($json->Value->Events as $val) {
@@ -152,7 +153,6 @@ class melbet extends ParsingAbstractClass
                 // ждем 0.1 секунд
                 usleep(100000);
             }
-
         }
     }
     /**

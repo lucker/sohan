@@ -3,15 +3,30 @@ class ContactFormCest
 {
     public function _before(\FunctionalTester $I)
     {
-        $I->amOnPage(['site/contact']);
+        //$I->amOnPage(['site/contacts']);
+        //$I->amOnPage(['site/registration']);
     }
 
+    /*
     public function openContactPage(\FunctionalTester $I)
     {
-        $I->see('Contact', 'h1');        
+        $I->see('Контакты');
+    }**/
+
+    public function registration(\FunctionalTester $I)
+    {
+        $I->amOnPage(['site/registration']);
+        $I->see('Регистрация на сайте sohan.xyz');
+
+        $I->submitForm('#registration', [
+            'RegistrationForm[email]' => 'tester@gmail.com',
+            'RegistrationForm[password]' => 'tester.email'
+        ]);
+        $I->see('существует');
     }
 
-    public function submitEmptyForm(\FunctionalTester $I)
+
+    /*public function submitEmptyForm(\FunctionalTester $I)
     {
         $I->submitForm('#contact-form', []);
         $I->expectTo('see validations errors');
@@ -52,5 +67,5 @@ class ContactFormCest
         $I->seeEmailIsSent();
         $I->dontSeeElement('#contact-form');
         $I->see('Thank you for contacting us. We will respond to you as soon as possible.');        
-    }
+    }*/
 }

@@ -11,6 +11,8 @@ use app\models\users;
 use app\models\RegistrationForm;
 use app\models\LoginForm;
 
+use app\modules\parser\models\insertEventsModelMongoDb;
+
 class SiteController extends Controller
 {
 	public $enableCsrfValidation = false;
@@ -78,7 +80,7 @@ class SiteController extends Controller
                 return $this->render('registration', ['model' => $model, 'error' => 'Не прошло валидацию']);
             }
         } else {
-            return $this->render('registration');
+            return $this->render('registration', ['model' => $model, 'error' => null]);
         }
 	}
 	//logout
@@ -114,5 +116,21 @@ class SiteController extends Controller
                 'class' => 'yii\web\ErrorAction',
             ],
         ];
+    }
+
+    public function actionTest()
+    {
+        // connect
+       /* $mongo = new insertEventsModelMongoDb();
+        $mongo->getData();
+       */
+       $test = new \app\models\test;
+        echo '<br>';
+       echo 'befor';
+       echo '<br>';
+       //$test = null;
+        echo '<br>';
+       echo 'after';
+        echo '<br>';
     }
 }

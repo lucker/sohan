@@ -13,6 +13,7 @@ use app\modules\parser\models\sportingbetru;
 use app\modules\parser\models\xbet;
 use app\modules\parser\models\melbet;
 use app\modules\parser\models\leonbets;
+use app\modules\parser\models\bet365;
 include "/var/www/html/parser/phpQuery.php";
 
 class ParsingController extends Controller
@@ -25,9 +26,15 @@ class ParsingController extends Controller
             exit;
         }
         posix_setsid();
-        $xbet = new xbet();
         while (1) {
-            $xbet->getEvents();
+            try {
+                $xbet = new xbet();
+                $xbet->getEvents();
+                unset($xbet);
+                sleep(10);
+            } catch (\Exception $e) {
+                echo $e->getMessage();
+            }
         }
     }
     // sportingbet
@@ -38,9 +45,15 @@ class ParsingController extends Controller
             exit;
         }
         posix_setsid();
-        $sportingbet = new sportingbetru();
         while (1) {
-            $sportingbet->getEvents();
+            try {
+                $sportingbet = new sportingbetru();
+                $sportingbet->getEvents();
+                unset($sportingbet);
+                sleep(10);
+            } catch (\Exception $e) {
+                echo $e->getMessage();
+            }
         }
     }
     // leonbets
@@ -51,9 +64,15 @@ class ParsingController extends Controller
             exit;
         }
         posix_setsid();
-        $leonbets = new leonbets();
         while (1) {
-            $leonbets->getEvents();
+            try {
+                $leonbets = new leonbets();
+                $leonbets->getEvents();
+                unset($leonbets);
+                sleep(10);
+            } catch (\Exception $e) {
+                echo $e->getMessage();
+            }
         }
     }
     // melbet
@@ -64,9 +83,21 @@ class ParsingController extends Controller
             exit;
         }
         posix_setsid();
-        $melbet = new melbet();
         while (1) {
-            $melbet->getEvents();
+            try {
+                $melbet = new melbet();
+                $melbet->getEvents();
+                unset($melbet);
+                sleep(10);
+            } catch (\Exception $e) {
+                echo $e->getMessage();
+            }
         }
+    }
+
+    public function actionBet365()
+    {
+        $bet365 = new bet365();
+        $bet365->getLeages();
     }
 }

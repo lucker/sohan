@@ -24,30 +24,27 @@ class sportingbetru extends ParsingAbstractClass
     }
     public function getEvents()
     {
-        //$start = microtime(true);
         $matches = Yii::$app->db
             ->createCommand('
-                SELECT 
-                 id,
-                 parsing_url as href
-                FROM `matches` 
-                WHERE `bukid` = :bukid
-                AND url IS NOT NULL
-                AND `date` > NOW()', [
+            SELECT 
+             id,
+             parsing_url as href
+            FROM `matches` 
+            WHERE `bukid` = :bukid
+            AND url IS NOT NULL
+            AND `date` > NOW()', [
                 ':bukid' => $this->bukid
             ])->queryAll();
-        //$u = 0;
-        //echo 'pid = '.getmypid(); echo '<br>';
-        for ($i=0; $i<count($matches); $i=$i+$this->connections) {
+        for ($i = 0; $i < count($matches); $i = $i + $this->connections) {
             $tmpMatches = [];
-            for ($j=0; $j<$this->connections && $j+$i<count($matches); $j++) {
-                $tmpMatches[] = $matches[$j+$i];
+            for ($j = 0; $j < $this->connections && $j + $i < count($matches); $j++) {
+                $tmpMatches[] = $matches[$j + $i];
             }
             $channels = $this->proceedUrls($tmpMatches);
             foreach ($channels as $key => $channel) {
                 $html = curl_multi_getcontent($channel);
                 $info = curl_getinfo($channel);
-                if ($html && $info['http_code']==200) {
+                if ($html && $info['http_code'] == 200) {
                     $document = \phpQuery::newDocument(gzdecode($html));
                     //wins
                     $oddsArray = [];
@@ -56,7 +53,7 @@ class sportingbetru extends ParsingAbstractClass
                         $headText = pq($event)
                             ->find('span.headerSub.groupHeader')
                             ->text();
-                        if (trim($headText)=='Коэффициенты на матч') {
+                        if (trim($headText) == 'Коэффициенты на матч') {
                             $uls = pq($event)->find('ul.teamTieCoupon');
                             foreach ($uls as $ul) {
                                 // коэфициенты
@@ -93,7 +90,7 @@ class sportingbetru extends ParsingAbstractClass
                             ->find('span.headerSub.groupHeader')
                             ->text();
                         $headText = trim($headText);
-                        if (trim($headText)=='Двойной шанс') {
+                        if (trim($headText) == 'Двойной шанс') {
                             $m_events = pq($event)->find('ul.coupon.simple.Team_Competition div.m_event');
                             foreach ($m_events as $m_event) {
                                 $eventName = pq($m_event)
@@ -104,7 +101,7 @@ class sportingbetru extends ParsingAbstractClass
                                     ->find('div#isOffered span.priceText.wide.EU')
                                     ->text();
                                 $odd = trim($odd);
-                                $eventName = $this->insertEventName($eventName, 3,null);
+                                $eventName = $this->insertEventName($eventName, 3, null);
                                 $this->insertEvents($matches[$key + $i]['id'], null, $eventName, $odd, 3);
                             }
                         }

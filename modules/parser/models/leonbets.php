@@ -153,7 +153,8 @@ class leonbets extends ParsingAbstractClass
             $channels = $this->proceedUrls($tmpMatches);
             foreach ($channels as $key => $channel) {
                 $html = curl_multi_getcontent($channel);
-                if ($html) {
+                $info = curl_getinfo($channel);
+                if ($html && $info['http_code']==200) {
                     $document = \phpQuery::newDocument(gzdecode($html));
                     $tables = pq($document)->find('table.morebets.offer-events');
                     foreach ($tables as $table) {

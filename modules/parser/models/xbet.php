@@ -36,7 +36,7 @@ class xbet extends ParsingAbstractClass
      */
     public function getEvents()
     {
-        $matches = $this->getData("
+            $matches = $this->getData("
             SELECT 
                 id,
                 parsing_url as href
@@ -45,59 +45,60 @@ class xbet extends ParsingAbstractClass
             AND url IS NOT NULL
             AND `date` > NOW()
         ");
-        for ($i=0; $i<count($matches); $i=$i+$this->connections) {
-            $tmpMatches = [];
-            for ($j=0; $j<$this->connections && $j+$i<count($matches); $j++) {
-                $tmpMatches[] = $matches[$j+$i];
-            }
-            $channels = $this->proceedUrls($tmpMatches);
-            foreach ($channels as $key => $channel) {
-                $html = curl_multi_getcontent($channel);
-                if (!empty($html)) {
-                    $json = json_decode(gzdecode($html));
-                    if (isset($json->Value->O1) && isset($json->Value->O2)) {
-                        for ($j = 0; $j < count($json->Value->E); $j++) {
-                            //уменшаем время работы цикла
-                            if ($json->Value->E[$j]->T > 10) {
-                                break;
-                            }
-                            switch ($json->Value->E[$j]->T) {
-                                case 1:
-                                    $this->insertEvents($matches[$key+$i]['id'], null, 9, $json->Value->E[$j]->C, 1);
+            for ($i = 0; $i < count($matches); $i = $i + $this->connections) {
+                $tmpMatches = [];
+                for ($j = 0; $j < $this->connections && $j + $i < count($matches); $j++) {
+                    $tmpMatches[] = $matches[$j + $i];
+                }
+                $channels = $this->proceedUrls($tmpMatches);
+                foreach ($channels as $key => $channel) {
+                    $html = curl_multi_getcontent($channel);
+                    $info = curl_getinfo($channel);
+                    if ($html && $info['http_code'] == 200) {
+                        $json = json_decode(gzdecode($html));
+                        if (isset($json->Value->O1) && isset($json->Value->O2)) {
+                            for ($j = 0; $j < count($json->Value->E); $j++) {
+                                //уменшаем время работы цикла
+                                if ($json->Value->E[$j]->T > 10) {
                                     break;
-                                case 2:
-                                    $this->insertEvents($matches[$key+$i]['id'], null, 10, $json->Value->E[$j]->C, 1);
-                                    break;
-                                case 3:
-                                    $this->insertEvents($matches[$key+$i]['id'], null, 11, $json->Value->E[$j]->C, 1);
-                                    break;
+                                }
+                                switch ($json->Value->E[$j]->T) {
+                                    case 1:
+                                        $this->insertEvents($matches[$key + $i]['id'], null, 9, $json->Value->E[$j]->C, 1);
+                                        break;
+                                    case 2:
+                                        $this->insertEvents($matches[$key + $i]['id'], null, 10, $json->Value->E[$j]->C, 1);
+                                        break;
+                                    case 3:
+                                        $this->insertEvents($matches[$key + $i]['id'], null, 11, $json->Value->E[$j]->C, 1);
+                                        break;
 
-                                case 4:
-                                    $this->insertEvents($matches[$key+$i]['id'], null, 12, $json->Value->E[$j]->C, 1);
-                                    break;
-                                case 5:
-                                    $this->insertEvents($matches[$key+$i]['id'], null, 14, $json->Value->E[$j]->C, 1);
-                                    break;
-                                case 6:
-                                    $this->insertEvents($matches[$key+$i]['id'], null, 13, $json->Value->E[$j]->C, 1);
-                                    break;
+                                    case 4:
+                                        $this->insertEvents($matches[$key + $i]['id'], null, 12, $json->Value->E[$j]->C, 1);
+                                        break;
+                                    case 5:
+                                        $this->insertEvents($matches[$key + $i]['id'], null, 14, $json->Value->E[$j]->C, 1);
+                                        break;
+                                    case 6:
+                                        $this->insertEvents($matches[$key + $i]['id'], null, 13, $json->Value->E[$j]->C, 1);
+                                        break;
 
-                                case 9:
-                                    $this->insertEvents($matches[$key+$i]['id'], $json->Value->E[$j]->P, 15, $json->Value->E[$j]->C, 1);
-                                    break;
-                                case 10:
-                                    $this->insertEvents($matches[$key+$i]['id'], $json->Value->E[$j]->P, 16, $json->Value->E[$j]->C, 1);
-                                    break;
+                                    case 9:
+                                        $this->insertEvents($matches[$key + $i]['id'], $json->Value->E[$j]->P, 15, $json->Value->E[$j]->C, 1);
+                                        break;
+                                    case 10:
+                                        $this->insertEvents($matches[$key + $i]['id'], $json->Value->E[$j]->P, 16, $json->Value->E[$j]->C, 1);
+                                        break;
+                                }
                             }
                         }
                     }
+                    curl_multi_remove_handle($this->mh, $channel);
+                    curl_close($channel);
+                    // ждем 0.1 секунд
+                    usleep(100000);
                 }
-                curl_multi_remove_handle($this->mh, $channel);
-                curl_close($channel);
-                // ждем 0.1 секунд
-                usleep(100000);
             }
-        }
     }
     /**
      * @return array матчи

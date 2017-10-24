@@ -89,8 +89,8 @@ class ParsingAbstractClass extends insertEvents
             $ch = curl_init();
             curl_setopt($ch, CURLOPT_URL, $url['href']);
             curl_setopt($ch, CURLOPT_HTTPHEADER, $this->headers[$proxy[$key%count($proxy)]]);
-            curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, false);
-            curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
+            curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, FALSE);
+            curl_setopt($ch, CURLOPT_RETURNTRANSFER, TRUE);
             curl_setopt($ch, CURLOPT_PROXY, $proxy[$key % count($proxy)].':8080');
             curl_setopt($ch, CURLOPT_PROXYUSERPWD, $this->proxyauth);
             curl_setopt($ch, CURLOPT_FOLLOWLOCATION, TRUE);
@@ -99,14 +99,12 @@ class ParsingAbstractClass extends insertEvents
             curl_multi_add_handle($this->mh, $ch);
             $channels[$key] = $ch;
         }
-
         //запускаем дескрипторы
         $running = null;
         do {
             curl_multi_exec($this->mh, $running);
             curl_multi_select($this->mh);
         } while ($running);
-
         return $channels;
     }
     /*
@@ -124,16 +122,17 @@ class ParsingAbstractClass extends insertEvents
             $header = [
                 "Accept: text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,*/*;q=0.8",
                 "Accept-Encoding: gzip",
-                //"Upgrade-Insecure-Requests: 1",
+                "Upgrade-Insecure-Requests: 1",
                 "Accept-Language: ru-RU,ru;q=0.8,en-US;q=0.6,en;q=0.4",
                 "Connection: keep-alive"
             ];
             curl_setopt($ch, CURLOPT_HTTPHEADER, $header);
             curl_setopt($ch, CURLOPT_USERAGENT, $user_agent);
-            curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
+            curl_setopt($ch, CURLOPT_RETURNTRANSFER, TRUE);
             curl_setopt($ch, CURLOPT_PROXY, $proxy[$key]['proxy'].':8080');
             curl_setopt($ch, CURLOPT_PROXYUSERPWD, $this->proxyauth);
-            curl_setopt($ch, CURLOPT_NOBODY, true);
+            // curl_setopt($ch, CURLOPT_NOBODY, true);
+            curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, FALSE);
             curl_setopt($ch, CURLOPT_FOLLOWLOCATION, TRUE);
             curl_setopt($ch, CURLOPT_CONNECTTIMEOUT, 2);
             curl_setopt($ch, CURLOPT_HEADER, 1);
@@ -150,12 +149,14 @@ class ParsingAbstractClass extends insertEvents
         foreach ($channels as $key => $channel) {
             $out = curl_multi_getcontent($channel);
             $info = curl_getinfo($channel);
+            $header = substr($out, 0, $info['header_size']);
+            //$body = substr($out, $info['header_size'])
             /*echo $out;
             echo '<pre>';
             print_r($info);
             echo '</pre>';*/
             if ($info['http_code']==200) {
-                preg_match_all('/Set-Cookie: .{1,};/', $out, $matches);
+                preg_match_all('/Set-Cookie: .{1,};/', $header, $matches);
                 foreach ($matches[0] as $match) {
                     $headers[$proxy[$key]['proxy']][] = str_replace('Set-Cookie:', 'Cookie:', $match);
                 }
@@ -164,6 +165,7 @@ class ParsingAbstractClass extends insertEvents
                 $headers[$proxy[$key]['proxy']][] = "Accept: text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,*/*;q=0.8";
                 $headers[$proxy[$key]['proxy']][] = "Accept-Language: ru-RU,ru;q=0.8,en-US;q=0.6,en;q=0.4";
                 $headers[$proxy[$key]['proxy']][] = "Connection: keep-alive";
+                $headers[$proxy[$key]['proxy']][] = "Upgrade-Insecure-Requests: 1";
             }
             curl_multi_remove_handle($this->mh, $channel);
             curl_close($channel);

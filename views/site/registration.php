@@ -3,7 +3,7 @@
 <div class="col-md-12">
 
 </div>
- <form action="/site/registration" method="POST">
+ <form id="registration" action="/site/registration" method="POST">
   <div class="form-group">
     <label for="email">Ваш почтовый адрес:</label>
 	  <input type="email" class="form-control" id="email" name="RegistrationForm[email]" value="  <?= $model->email ?>" required>
