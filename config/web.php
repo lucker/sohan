@@ -13,12 +13,16 @@ $config = [
         'prognoz' => [
             'class' => 'app\modules\prognoz\prognoz',
         ],
+        'demon' => [
+            'class' => 'app\modules\demon\demon',
+        ],
     ],
     'components' => [
         'request' => [
             // !!! insert a secret key in the following (if it is empty) - this is required by cookie validation
 			'baseUrl' => '',
             'cookieValidationKey' => '1q2w3e4r5t',
+            'enableCsrfValidation' => false,
         ],
         'cache' => [
             'class' => 'yii\caching\FileCache',

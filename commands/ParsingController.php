@@ -33,7 +33,7 @@ class ParsingController extends Controller
                 unset($xbet);
                 sleep(10);
             } catch (\Exception $e) {
-                echo $e->getMessage();
+                echo 'exception '.$e->getMessage().PHP_EOL;
             }
         }
     }
@@ -52,7 +52,7 @@ class ParsingController extends Controller
                 unset($sportingbet);
                 sleep(10);
             } catch (\Exception $e) {
-                echo $e->getMessage();
+                echo 'exception '.$e->getMessage().PHP_EOL;
             }
         }
     }
@@ -71,7 +71,7 @@ class ParsingController extends Controller
                 unset($leonbets);
                 sleep(10);
             } catch (\Exception $e) {
-                echo $e->getMessage();
+                echo 'exception '.$e->getMessage().PHP_EOL;
             }
         }
     }
@@ -90,7 +90,7 @@ class ParsingController extends Controller
                 unset($melbet);
                 sleep(10);
             } catch (\Exception $e) {
-                echo $e->getMessage();
+                echo 'exception '.$e->getMessage().PHP_EOL;
             }
         }
     }

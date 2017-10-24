@@ -120,17 +120,11 @@ class SiteController extends Controller
 
     public function actionTest()
     {
-        // connect
-       /* $mongo = new insertEventsModelMongoDb();
-        $mongo->getData();
-       */
-       $test = new \app\models\test;
-        echo '<br>';
-       echo 'befor';
-       echo '<br>';
-       //$test = null;
-        echo '<br>';
-       echo 'after';
-        echo '<br>';
+        $array = ['dsa'];
+        if (empty($array)) {
+            echo 'empty';
+        } else {
+            echo 'not';
+        }
     }
 }

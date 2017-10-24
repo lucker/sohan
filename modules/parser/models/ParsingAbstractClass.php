@@ -85,26 +85,28 @@ class ParsingAbstractClass extends insertEvents
         foreach ($this->headers as $key => $val) {
             $proxy[] = $key;
         }
-        foreach ($urls as $key => $url) {
-            $ch = curl_init();
-            curl_setopt($ch, CURLOPT_URL, $url['href']);
-            curl_setopt($ch, CURLOPT_HTTPHEADER, $this->headers[$proxy[$key%count($proxy)]]);
-            curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, FALSE);
-            curl_setopt($ch, CURLOPT_RETURNTRANSFER, TRUE);
-            curl_setopt($ch, CURLOPT_PROXY, $proxy[$key % count($proxy)].':8080');
-            curl_setopt($ch, CURLOPT_PROXYUSERPWD, $this->proxyauth);
-            curl_setopt($ch, CURLOPT_FOLLOWLOCATION, TRUE);
-            curl_setopt($ch, CURLOPT_CONNECTTIMEOUT, 2);
-            // curl_setopt($ch, CURLOPT_VERBOSE, 1);
-            curl_multi_add_handle($this->mh, $ch);
-            $channels[$key] = $ch;
+        if (!empty($proxy)) {
+            foreach ($urls as $key => $url) {
+                $ch = curl_init();
+                curl_setopt($ch, CURLOPT_URL, $url['href']);
+                curl_setopt($ch, CURLOPT_HTTPHEADER, $this->headers[$proxy[$key % count($proxy)]]);
+                curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, FALSE);
+                curl_setopt($ch, CURLOPT_RETURNTRANSFER, TRUE);
+                curl_setopt($ch, CURLOPT_PROXY, $proxy[$key % count($proxy)] . ':8080');
+                curl_setopt($ch, CURLOPT_PROXYUSERPWD, $this->proxyauth);
+                curl_setopt($ch, CURLOPT_FOLLOWLOCATION, TRUE);
+                curl_setopt($ch, CURLOPT_CONNECTTIMEOUT, 2);
+                // curl_setopt($ch, CURLOPT_VERBOSE, 1);
+                curl_multi_add_handle($this->mh, $ch);
+                $channels[$key] = $ch;
+            }
+            //запускаем дескрипторы
+            $running = null;
+            do {
+                curl_multi_exec($this->mh, $running);
+                curl_multi_select($this->mh);
+            } while ($running);
         }
-        //запускаем дескрипторы
-        $running = null;
-        do {
-            curl_multi_exec($this->mh, $running);
-            curl_multi_select($this->mh);
-        } while ($running);
         return $channels;
     }
     /*
